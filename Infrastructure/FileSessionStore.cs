@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using DCTravelCli.Serialization;
 using DCTravelCli.Services;
 
 namespace DCTravelCli.Infrastructure;
@@ -8,11 +9,6 @@ namespace DCTravelCli.Infrastructure;
 public sealed class FileSessionStore : ISessionStore
 {
     private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("DCTravelCli.session.v1");
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        WriteIndented = true
-    };
-
     private readonly string sessionPath;
 
     public FileSessionStore()
@@ -39,7 +35,9 @@ public sealed class FileSessionStore : ISessionStore
         {
             var protectedBytes = await File.ReadAllBytesAsync(sessionPath, cancellationToken);
             var jsonBytes = Unprotect(protectedBytes);
-            var stored = JsonSerializer.Deserialize<StoredSession>(jsonBytes, JsonOptions);
+            var stored = JsonSerializer.Deserialize(
+                jsonBytes,
+                DCTravelJsonSerializerContext.Default.StoredSession);
 
             if (stored?.Cookies is null || stored.Cookies.Count == 0)
             {
@@ -64,7 +62,9 @@ public sealed class FileSessionStore : ISessionStore
             DisplayAccount: session.DisplayAccount,
             Cookies: session.SourceCookies);
 
-        var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(stored, JsonOptions);
+        var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(
+            stored,
+            DCTravelJsonSerializerContext.Default.StoredSession);
         var protectedBytes = Protect(jsonBytes);
         await File.WriteAllBytesAsync(sessionPath, protectedBytes, cancellationToken);
     }
@@ -93,9 +93,10 @@ public sealed class FileSessionStore : ISessionStore
             : bytes;
     }
 
-    private sealed record StoredSession(
-        int Version,
-        DateTimeOffset SavedAt,
-        string? DisplayAccount,
-        IReadOnlyList<SessionCookie> Cookies);
 }
+
+internal sealed record StoredSession(
+    int Version,
+    DateTimeOffset SavedAt,
+    string? DisplayAccount,
+    IReadOnlyList<SessionCookie> Cookies);

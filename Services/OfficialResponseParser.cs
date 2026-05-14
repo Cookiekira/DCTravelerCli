@@ -1,36 +1,32 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Text.Json.Nodes;
 using DCTravelCli.Domain;
+using DCTravelCli.Serialization;
 using DCTravelCli.Services.OfficialDtos;
 
 namespace DCTravelCli.Services;
 
 public static class OfficialResponseParser
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        NumberHandling = JsonNumberHandling.AllowReadingFromString
-    };
-
     public static IReadOnlyList<SourceRegion> ToSourceRegions(JsonElement groupList)
     {
-        return ReadArray<RegionDto>(groupList)
+        return ReadArray(groupList, GetTypeInfo<RegionDto>())
             .Select(region => new SourceRegion(
                 region.AreaId,
                 region.AreaName ?? region.AreaId.ToString(),
-                ReadArray<WorldDto>(region.Groups).Select(ToSourceWorld).ToArray(),
+                ReadArray(region.Groups, GetTypeInfo<WorldDto>()).Select(ToSourceWorld).ToArray(),
                 region.State))
             .ToArray();
     }
 
     public static IReadOnlyList<TargetRegion> ToTargetRegions(JsonElement groupList)
     {
-        return ReadArray<RegionDto>(groupList)
+        return ReadArray(groupList, GetTypeInfo<RegionDto>())
             .Select(region => new TargetRegion(
                 region.AreaId,
                 region.AreaName ?? region.AreaId.ToString(),
-                ReadArray<WorldDto>(region.Groups).Select(ToTargetWorld).ToArray(),
+                ReadArray(region.Groups, GetTypeInfo<WorldDto>()).Select(ToTargetWorld).ToArray(),
                 region.State))
             .ToArray();
     }
@@ -187,11 +183,22 @@ public static class OfficialResponseParser
 
     public static IReadOnlyList<T> ReadArray<T>(JsonElement value)
     {
+        return ReadArray(value, GetTypeInfo<T>());
+    }
+
+    private static IReadOnlyList<T> ReadArray<T>(JsonElement value, JsonTypeInfo<T> jsonTypeInfo)
+    {
         return ReadElements(value)
-            .Select(element => element.Deserialize<T>(JsonOptions))
+            .Select(element => JsonSerializer.Deserialize(element, jsonTypeInfo))
             .Where(item => item is not null)
             .Cast<T>()
             .ToArray();
+    }
+
+    private static JsonTypeInfo<T> GetTypeInfo<T>()
+    {
+        return (JsonTypeInfo<T>?)DCTravelJsonSerializerContext.Default.GetTypeInfo(typeof(T))
+            ?? throw new InvalidOperationException($"未生成 {typeof(T)} 的 JSON 元数据。");
     }
 
     private static SourceWorld ToSourceWorld(WorldDto world)

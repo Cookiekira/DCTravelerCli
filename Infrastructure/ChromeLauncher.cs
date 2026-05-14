@@ -7,7 +7,6 @@ namespace DCTravelCli.Infrastructure;
 
 internal sealed class ChromeLauncher
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(5) };
 
     public async Task<LaunchedBrowser> OpenAsync(

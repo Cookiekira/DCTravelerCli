@@ -5,31 +5,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>DCTravelCli</AssemblyName>
     <RootNamespace>DCTravelCli</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' and '$(RuntimeIdentifier)' != ''">
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(PublishReleaseArtifacts)' == 'true'">
     <RuntimeIdentifiers>win-x64;linux-x64;osx-arm64</RuntimeIdentifiers>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' and ('$(RuntimeIdentifier)' != '' or '$(PublishReleaseArtifacts)' == 'true')">
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' and '$(RuntimeIdentifier)' != '' and '$(PublishAot)' != 'true'">
-    <PublishSingleFile>true</PublishSingleFile>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(PublishAot)' == 'true'">
-    <StripSymbols>true</StripSymbols>
-    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

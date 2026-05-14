@@ -1,18 +1,14 @@
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using DCTravelCli.Domain;
+using DCTravelCli.Serialization;
 using DCTravelCli.Services.OfficialDtos;
 
 namespace DCTravelCli.Services;
 
 public sealed class OfficialTravelClient : ITravelApi
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        NumberHandling = JsonNumberHandling.AllowReadingFromString
-    };
-
     private readonly HttpClientHandler handler;
     private readonly HttpClient httpClient;
     private bool migrationOrdersInitialized;
@@ -46,6 +42,7 @@ public sealed class OfficialTravelClient : ITravelApi
                 {
                     ["migrationType"] = OfficialEndpoints.MigrationType.ToString()
                 },
+                GetResponseTypeInfo<LoginProbeData>(),
                 cancellationToken);
 
             return response.ReturnCode == 0
@@ -66,6 +63,7 @@ public sealed class OfficialTravelClient : ITravelApi
             {
                 ["appId"] = OfficialEndpoints.AppId.ToString()
             },
+            GetResponseTypeInfo<GroupListData>(),
             cancellationToken);
 
         return OfficialResponseParser.ToSourceRegions(response.GroupList);
@@ -84,6 +82,7 @@ public sealed class OfficialTravelClient : ITravelApi
                 ["areaId"] = sourceRegion.AreaId.ToString(),
                 ["groupId"] = sourceWorld.GroupId.ToString()
             },
+            GetResponseTypeInfo<RoleListData>(),
             cancellationToken);
 
         return OfficialResponseParser.ToCharacters(response.RoleList, sourceRegion, sourceWorld);
@@ -102,6 +101,7 @@ public sealed class OfficialTravelClient : ITravelApi
                 ["areaId"] = sourceRegion.AreaId.ToString(),
                 ["groupId"] = sourceWorld.GroupId.ToString()
             },
+            GetResponseTypeInfo<GroupListData>(),
             cancellationToken);
 
         return OfficialResponseParser.ToTargetRegions(response.GroupList);
@@ -127,6 +127,7 @@ public sealed class OfficialTravelClient : ITravelApi
             {
                 ["appId"] = OfficialEndpoints.AppId.ToString()
             },
+            GetResponseTypeInfo<GroupListData>(),
             cancellationToken);
 
         return OfficialResponseParser.ToSourceRegions(response.GroupList);
@@ -145,6 +146,7 @@ public sealed class OfficialTravelClient : ITravelApi
                 ["groupCode"] = selection.CurrentWorld.GroupCode,
                 ["groupName"] = selection.CurrentWorld.GroupName
             },
+            GetResponseTypeInfo<TravelBackData>(),
             cancellationToken);
 
         if (response.ResultCode != 0)
@@ -164,7 +166,7 @@ public sealed class OfficialTravelClient : ITravelApi
     {
         var character = selection.Character;
         var target = selection.Target;
-        var roleList = $"[{character.OfficialPayload.ToJsonString(JsonOptions)}]";
+        var roleList = $"[{character.OfficialPayload.ToJsonString()}]";
 
         var response = await GetOkAsync<TravelOrderData>(
             "/api/orderserivce/travelOrder",
@@ -187,6 +189,7 @@ public sealed class OfficialTravelClient : ITravelApi
                 ["roleList"] = roleList,
                 ["isMigrationTimes"] = "0"
             },
+            GetResponseTypeInfo<TravelOrderData>(),
             cancellationToken);
 
         if (string.IsNullOrWhiteSpace(response.OrderId))
@@ -207,6 +210,7 @@ public sealed class OfficialTravelClient : ITravelApi
             {
                 ["orderId"] = order.OrderId
             },
+            GetResponseTypeInfo<OrderStatusData>(),
             cancellationToken);
 
         return new OrderStatusSnapshot((MigrationStatus)response.MigrationStatus, response.MigrationMessage);
@@ -224,6 +228,7 @@ public sealed class OfficialTravelClient : ITravelApi
                 ["orderId"] = order.OrderId,
                 ["confirmType"] = confirm ? "1" : "0"
             },
+            GetResponseTypeInfo<JsonElement>(),
             cancellationToken);
 
         if (response.ReturnCode != 0)
@@ -244,9 +249,10 @@ public sealed class OfficialTravelClient : ITravelApi
     private async Task<T> GetOkAsync<T>(
         string path,
         IReadOnlyDictionary<string, string?> parameters,
+        JsonTypeInfo<OfficialResponse<T>> responseJsonTypeInfo,
         CancellationToken cancellationToken)
     {
-        var response = await GetRawAsync<T>(path, parameters, cancellationToken);
+        var response = await GetRawAsync(path, parameters, responseJsonTypeInfo, cancellationToken);
         if (response.ReturnCode != 0)
         {
             var message = string.IsNullOrWhiteSpace(response.ReturnMessage)
@@ -278,6 +284,7 @@ public sealed class OfficialTravelClient : ITravelApi
                     ["pageIndex"] = pageIndex.ToString(),
                     ["pageNum"] = pageSize.ToString()
                 },
+                GetResponseTypeInfo<MigrationOrdersData>(),
                 cancellationToken);
 
             orders.AddRange(OfficialResponseParser.ReadElements(response.OrderList));
@@ -301,6 +308,7 @@ public sealed class OfficialTravelClient : ITravelApi
             {
                 ["migrationType"] = "0"
             },
+            GetResponseTypeInfo<JsonElement>(),
             cancellationToken);
         migrationOrdersInitialized = true;
     }
@@ -308,19 +316,27 @@ public sealed class OfficialTravelClient : ITravelApi
     private async Task<OfficialResponse<T>> GetRawAsync<T>(
         string path,
         IReadOnlyDictionary<string, string?> parameters,
+        JsonTypeInfo<OfficialResponse<T>> responseJsonTypeInfo,
         CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, BuildUri(path, parameters));
         using var response = await httpClient.SendAsync(request, cancellationToken);
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
             throw new HttpRequestException($"官网接口 HTTP {(int)response.StatusCode}：{content}");
         }
 
-        return JsonSerializer.Deserialize<OfficialResponse<T>>(content, JsonOptions)
+        await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        return await JsonSerializer.DeserializeAsync(contentStream, responseJsonTypeInfo, cancellationToken)
             ?? throw new InvalidOperationException("官网接口返回的 JSON 无法解析。");
+    }
+
+    private static JsonTypeInfo<OfficialResponse<T>> GetResponseTypeInfo<T>()
+    {
+        return (JsonTypeInfo<OfficialResponse<T>>?)DCTravelJsonSerializerContext.Default.GetTypeInfo(typeof(OfficialResponse<T>))
+            ?? throw new InvalidOperationException($"未生成 {typeof(OfficialResponse<T>)} 的 JSON 元数据。");
     }
 
     private static Uri BuildUri(string path, IReadOnlyDictionary<string, string?> parameters)

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 
@@ -5,7 +6,12 @@ namespace DCTravelCli.Infrastructure;
 
 internal sealed class DependencyInjectionTypeRegistrar(IServiceCollection services) : ITypeRegistrar
 {
-    public void Register(Type service, Type implementation) => services.AddSingleton(service, implementation);
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2067",
+        Justification = "Spectre.Console.Cli supplies command and settings types through this interface; generic command registration roots their public constructors.")]
+    public void Register(Type service, Type implementation) =>
+        services.AddSingleton(service, implementation);
 
     public void RegisterInstance(Type service, object implementation) => services.AddSingleton(service, implementation);
 

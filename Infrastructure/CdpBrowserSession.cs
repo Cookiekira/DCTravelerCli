@@ -1,13 +1,14 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using DCTravelCli.Serialization;
 
 namespace DCTravelCli.Infrastructure;
 
 internal sealed class CdpBrowserSession : IAsyncDisposable
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
     private readonly ClientWebSocket socket;
     private int nextId;
 
@@ -24,21 +25,37 @@ internal sealed class CdpBrowserSession : IAsyncDisposable
         await socket.ConnectAsync(new Uri(webSocketDebuggerUrl), cancellationToken);
 
         var session = new CdpBrowserSession(socket);
-        await session.InvokeAsync("Page.enable", new { }, cancellationToken);
-        await session.InvokeAsync("Network.enable", new { }, cancellationToken);
+        await session.InvokeAsync(
+            "Page.enable",
+            new CdpEmptyParameters(),
+            DCTravelJsonSerializerContext.Default.CdpInvocationCdpEmptyParameters,
+            cancellationToken);
+        await session.InvokeAsync(
+            "Network.enable",
+            new CdpEmptyParameters(),
+            DCTravelJsonSerializerContext.Default.CdpInvocationCdpEmptyParameters,
+            cancellationToken);
         return session;
     }
 
     public Task NavigateAsync(string url, CancellationToken cancellationToken)
     {
-        return InvokeAsync("Page.navigate", new { url }, cancellationToken);
+        return InvokeAsync(
+            "Page.navigate",
+            new CdpNavigateParameters(url),
+            DCTravelJsonSerializerContext.Default.CdpInvocationCdpNavigateParameters,
+            cancellationToken);
     }
 
     public async Task<IReadOnlyList<CdpCookie>> GetCookiesAsync(
         IReadOnlyList<string> urls,
         CancellationToken cancellationToken)
     {
-        using var result = await InvokeAsync("Network.getCookies", new { urls }, cancellationToken);
+        using var result = await InvokeAsync(
+            "Network.getCookies",
+            new CdpGetCookiesParameters(urls),
+            DCTravelJsonSerializerContext.Default.CdpInvocationCdpGetCookiesParameters,
+            cancellationToken);
         if (!result.RootElement.TryGetProperty("cookies", out var cookiesElement) ||
             cookiesElement.ValueKind != JsonValueKind.Array)
         {
@@ -72,20 +89,16 @@ internal sealed class CdpBrowserSession : IAsyncDisposable
         socket.Dispose();
     }
 
-    private async Task<JsonDocument> InvokeAsync(
+    private async Task<JsonDocument> InvokeAsync<TParameters>(
         string method,
-        object parameters,
+        TParameters parameters,
+        JsonTypeInfo<CdpInvocation<TParameters>> invocationJsonTypeInfo,
         CancellationToken cancellationToken)
     {
         var id = Interlocked.Increment(ref nextId);
-        var message = JsonSerializer.Serialize(
-            new
-            {
-                id,
-                method,
-                @params = parameters
-            },
-            JsonOptions);
+        var message = JsonSerializer.SerializeToUtf8Bytes(
+            new CdpInvocation<TParameters>(id, method, parameters),
+            invocationJsonTypeInfo);
 
         await SendAsync(message, cancellationToken);
 
@@ -116,9 +129,8 @@ internal sealed class CdpBrowserSession : IAsyncDisposable
         }
     }
 
-    private async Task SendAsync(string text, CancellationToken cancellationToken)
+    private async Task SendAsync(byte[] bytes, CancellationToken cancellationToken)
     {
-        var bytes = Encoding.UTF8.GetBytes(text);
         await socket.SendAsync(
             bytes,
             WebSocketMessageType.Text,
@@ -167,3 +179,14 @@ internal sealed class CdpBrowserSession : IAsyncDisposable
             : null;
     }
 }
+
+internal sealed record CdpInvocation<TParameters>(
+    int Id,
+    string Method,
+    [property: JsonPropertyName("params")] TParameters Parameters);
+
+internal readonly record struct CdpEmptyParameters;
+
+internal sealed record CdpNavigateParameters(string Url);
+
+internal sealed record CdpGetCookiesParameters(IReadOnlyList<string> Urls);
