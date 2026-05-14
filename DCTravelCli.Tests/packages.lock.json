@@ -94,14 +94,6 @@
         "resolved": "0.55.0",
         "contentHash": "GIfgOvuF8MpU52bprhwtDEtx0gmVIGOepM8bw0lH/TSMD0rg1Xp+5Y53kPG8rFVdcpbNANlhDQ5mEVVPO3/2Tg=="
       },
-      "Spectre.Console.Cli": {
-        "type": "Transitive",
-        "resolved": "0.55.0",
-        "contentHash": "cFJTB1te4eaAICd4Zp+8T/kiRn1ikQxgGqmoNarb1qoQ/7LzHAvVQ62x5U9GW3E0QI7sZLcXIIoq4CpqgTx42Q==",
-        "dependencies": {
-          "Spectre.Console": "0.55.0"
-        }
-      },
       "System.Security.Cryptography.ProtectedData": {
         "type": "Transitive",
         "resolved": "10.0.0",
@@ -151,7 +143,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "[10.0.0, )",
-          "Spectre.Console.Cli": "[0.55.0, )",
+          "Spectre.Console": "[0.55.0, )",
           "System.Security.Cryptography.ProtectedData": "[10.0.0, )"
         }
       }
