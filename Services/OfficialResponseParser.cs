@@ -82,6 +82,7 @@ public static class OfficialResponseParser
     public static IReadOnlyList<ActiveTravelOrder> ToActiveTravelOrders(IReadOnlyList<JsonElement> orders)
     {
         var activeOrders = new List<ActiveTravelOrder>();
+        var activeKeys = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var order in orders)
         {
@@ -131,7 +132,7 @@ public static class OfficialResponseParser
                 ReadString(order, "targetGroupCode") ?? currentGroupId.Value.ToString(),
                 ReadString(order, "targetGroupName") ?? currentGroupId.Value.ToString());
 
-            activeOrders.Add(new ActiveTravelOrder(
+            var activeOrder = new ActiveTravelOrder(
                 orderId,
                 string.IsNullOrWhiteSpace(roleId) ? null : roleId,
                 roleName,
@@ -139,7 +140,14 @@ public static class OfficialResponseParser
                 homeWorld,
                 currentRegion,
                 currentWorld,
-                ReadString(order, "migrationStatusDesc")));
+                ReadString(order, "migrationStatusDesc"));
+
+            if (!activeKeys.Add(BuildActiveOrderKey(activeOrder)))
+            {
+                continue;
+            }
+
+            activeOrders.Add(activeOrder);
         }
 
         return activeOrders
@@ -233,6 +241,13 @@ public static class OfficialResponseParser
 
         return migrationStatus == 5 && travelStatus == 1 ||
             statusDescription.Contains("旅行中", StringComparison.Ordinal);
+    }
+
+    private static string BuildActiveOrderKey(ActiveTravelOrder order)
+    {
+        return string.IsNullOrWhiteSpace(order.RoleId)
+            ? $"home:{order.HomeRegion.AreaId}:{order.HomeWorld.GroupId}:{order.RoleName}"
+            : $"id:{order.RoleId}";
     }
 
     private static JsonElement? ReadOrderDetail(JsonElement order)

@@ -68,18 +68,28 @@ jobs:
             archive: zip
             flavor: stable
             asset_suffix: win-x64
+            publish_aot: false
+            experimental: false
+          - os: windows-latest
+            rid: win-x64
+            archive: zip
+            flavor: stable
+            asset_suffix: win-x64-aot
+            publish_aot: true
             experimental: false
           - os: ubuntu-latest
             rid: linux-x64
             archive: tar.gz
             flavor: stable
             asset_suffix: linux-x64
+            publish_aot: false
             experimental: false
           - os: macos-latest
             rid: osx-arm64
             archive: tar.gz
             flavor: stable
             asset_suffix: osx-arm64
+            publish_aot: false
             experimental: false
 
     steps:
@@ -111,6 +121,9 @@ jobs:
             "-p:Configuration=Release",
             "-p:PublishReleaseArtifacts=true"
           )
+          if ("${{ matrix.publish_aot }}" -eq "true") {
+            $args += "-p:PublishAot=true"
+          }
           dotnet @args
 
       - name: Publish
@@ -131,6 +144,9 @@ jobs:
             "-p:DebugSymbols=false",
             "--output", $publishDir
           )
+          if ("${{ matrix.publish_aot }}" -eq "true") {
+            $args += "-p:PublishAot=true"
+          }
           dotnet @args
           Get-ChildItem -LiteralPath $publishDir -Recurse -Force |
             Where-Object { $_.Name -like "*.pdb" -or $_.Name -like "*.dbg" -or $_.Name -like "*.dSYM" } |

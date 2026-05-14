@@ -109,6 +109,25 @@ public sealed class OfficialResponseParserTests
     }
 
     [Fact]
+    public void ToActiveTravelOrders_collapses_duplicate_active_orders_for_same_role()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            [
+              { "orderId": "new", "migrationType": 4, "migrationStatus": 5, "travelStatus": 1, "migrationStatusDesc": "旅行中", "areaId": 1, "areaName": "莫古力", "groupId": 10, "groupCode": "A", "groupName": "白银乡", "targetAreaId": 2, "targetAreaName": "陆行鸟", "targetGroupId": 22, "targetGroupCode": "new", "targetGroupName": "红玉海", "migrationDetailList": [{ "roleId": "100", "roleName": "斜膀泰迪" }] },
+              { "orderId": "old", "migrationType": 4, "migrationStatus": 5, "travelStatus": 1, "migrationStatusDesc": "旅行中", "areaId": 1, "areaName": "莫古力", "groupId": 10, "groupCode": "A", "groupName": "白银乡", "targetAreaId": 2, "targetAreaName": "陆行鸟", "targetGroupId": 21, "targetGroupCode": "old", "targetGroupName": "萌芽池", "migrationDetailList": [{ "roleId": "100", "roleName": "斜膀泰迪" }] }
+            ]
+            """);
+
+        var orders = OfficialResponseParser.ToActiveTravelOrders(
+            OfficialResponseParser.ReadElements(document.RootElement));
+
+        Assert.Single(orders);
+        Assert.Equal("new", orders[0].OrderId);
+        Assert.Equal("红玉海", orders[0].CurrentWorld.GroupName);
+    }
+
+    [Fact]
     public void ToMigrationOrders_reads_return_status()
     {
         using var document = JsonDocument.Parse(
