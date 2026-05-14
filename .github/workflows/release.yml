@@ -67,42 +67,12 @@ jobs:
             flavor: stable
             asset_suffix: linux-x64
             experimental: false
-          - os: macos-15-intel
-            rid: osx-x64
-            archive: tar.gz
-            flavor: stable
-            asset_suffix: osx-x64
-            experimental: false
           - os: macos-latest
             rid: osx-arm64
             archive: tar.gz
             flavor: stable
             asset_suffix: osx-arm64
             experimental: false
-          - os: windows-latest
-            rid: win-x64
-            archive: zip
-            flavor: aot
-            asset_suffix: win-x64-aot
-            experimental: true
-          - os: ubuntu-latest
-            rid: linux-x64
-            archive: tar.gz
-            flavor: aot
-            asset_suffix: linux-x64-aot
-            experimental: true
-          - os: macos-15-intel
-            rid: osx-x64
-            archive: tar.gz
-            flavor: aot
-            asset_suffix: osx-x64-aot
-            experimental: true
-          - os: macos-latest
-            rid: osx-arm64
-            archive: tar.gz
-            flavor: aot
-            asset_suffix: osx-arm64-aot
-            experimental: true
 
     steps:
       - name: Check out repository
@@ -115,12 +85,6 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Install Native AOT prerequisites on Linux
-        if: matrix.flavor == 'aot' && runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang zlib1g-dev
-
       - name: Restore
         run: dotnet restore DCTravelCli.csproj --runtime ${{ matrix.rid }}
 
@@ -128,7 +92,6 @@ jobs:
         shell: pwsh
         run: |
           $publishDir = Join-Path $env:RUNNER_TEMP "publish-${{ matrix.asset_suffix }}"
-          $aot = "${{ matrix.flavor }}" -eq "aot"
           $args = @(
             "publish",
             "DCTravelCli.csproj",
@@ -138,9 +101,6 @@ jobs:
             "--no-restore",
             "--output", $publishDir
           )
-          if ($aot) {
-            $args += "-p:PublishAot=true"
-          }
           dotnet @args
           Get-ChildItem -LiteralPath $publishDir -Recurse -Force |
             Where-Object { $_.Name -like "*.pdb" -or $_.Name -like "*.dbg" -or $_.Name -like "*.dSYM" } |
