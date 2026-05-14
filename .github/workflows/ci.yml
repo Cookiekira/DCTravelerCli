@@ -31,17 +31,13 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.NUGET_PACKAGES }}
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.slnx') }}
-          restore-keys: |
-            nuget-${{ runner.os }}-
+          cache: true
+          cache-dependency-path: |
+            packages.lock.json
+            DCTravelCli.Tests/packages.lock.json
 
       - name: Restore
-        run: dotnet restore DCTravelCli.slnx
+        run: dotnet restore DCTravelCli.slnx --locked-mode
 
       - name: Build
         run: dotnet build DCTravelCli.slnx --configuration Release --no-restore
