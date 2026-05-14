@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DCTravelCli.csproj" />
+  <Project Path="DCTravelCli.Tests/DCTravelCli.Tests.csproj" />
+</Solution>
