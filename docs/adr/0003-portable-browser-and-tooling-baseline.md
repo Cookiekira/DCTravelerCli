@@ -11,9 +11,9 @@ The repository also targets .NET 10, so the SDK and code quality setup should ex
 ## Consequences
 
 - Public CLI options should use browser-neutral names such as `--browser-path` and `--default-browser-profile`.
-- Legacy Chrome-specific option names may continue to work as compatibility aliases, but help text should direct users to the browser-neutral names.
+- Chrome-specific option names should be replaced outright rather than kept as compatibility aliases while the project is still pre-release.
 - Automatic browser discovery should check common Chrome, Edge, Chromium, Brave, Vivaldi, Opera, and Arc locations or PATH names before failing.
-- The dedicated profile directory should move toward a browser-neutral name while preserving existing user profile data when possible.
+- The dedicated profile directory should use a browser-neutral name; no legacy profile-directory fallback is required while the project is still pre-release.
 - CDP endpoint validation should accept supported Chromium-family product strings and reject unknown non-browser debug endpoints.
 - `global.json` should define a valid .NET 10 SDK floor with feature-band roll-forward, and CI should install `10.0.x`.
 - Formatting and linting should use the .NET SDK analyzer stack and `dotnet format --verify-no-changes` before build/test in CI.

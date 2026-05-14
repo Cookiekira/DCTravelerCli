@@ -183,7 +183,7 @@ _Avoid_: Live browser API context
 - The default command surface should stay minimal; browser, port, timeout, profile, and concurrency settings are **Advanced Options**.
 - Login should use browser-assisted **Session Acquisition**, keeping WeGame authentication in a real **Chromium Browser** instead of reimplementing third-party login.
 - **Browser Discovery** should prefer Chrome-compatible installs first, then fall back to other common Chromium-based browsers such as Edge, Chromium, Brave, Vivaldi, Opera, and Arc. Less common Chromium browsers remain supported through the explicit browser path **Advanced Option**.
-- Browser-related **Advanced Options** should use browser-neutral names. Legacy Chrome-specific option names may remain as compatibility aliases, but help text should teach the browser-neutral surface.
+- Browser-related **Advanced Options** should use browser-neutral names. Because the project is still pre-release, Chrome-specific option names should be replaced outright rather than kept as compatibility aliases.
 - CDP should only support **Session Acquisition** and cookie extraction; official API calls should use typed HTTP clients, not page-injected JavaScript fetches.
 - After **Session Acquisition** succeeds, **Travel Orchestration** should use an **Official Session** through HTTP clients and no longer depend on the live browser page.
 - **Session Acquisition** should not simulate DOM clicks.
