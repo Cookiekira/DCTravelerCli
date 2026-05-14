@@ -97,7 +97,7 @@ The post-submission polling loop that watches official migration status until co
 _Avoid_: Status spam
 
 **Offline Coverage**:
-Automated tests for travel decisions and API parsing that do not require Chrome, a live login session, or the official service.
+Automated tests for travel decisions, browser discovery, CDP endpoint validation, and API parsing that do not require a real browser, a live login session, or the official service.
 _Avoid_: Browser automation tests, live service tests
 
 **Travel Flow**:
@@ -113,12 +113,20 @@ An advanced maintenance action that completes login without submitting a travel 
 _Avoid_: Main login step
 
 **Session Acquisition**:
-The browser-assisted login step that obtains official FF14 session cookies from a real Chrome authentication flow.
-_Avoid_: Raw cookie login, custom WeGame login, DOM click automation
+The browser-assisted login step that obtains official FF14 session cookies from a real Chromium Browser authentication flow.
+_Avoid_: Raw cookie login, custom WeGame login, DOM click automation, Chrome-only login
 
 **WeGame Login Shortcut**:
 A user-selected login path that starts from the official travel page, then opens Shengqu's first-party login frame with `goClick=wegame` so the official page performs its own WeGame handoff.
 _Avoid_: Direct old Rail OAuth entry, out-of-browser login attribute saves, scraping or clicking the Shengqu login page
+
+**Chromium Browser**:
+A CDP-capable browser from the Chromium family used only for Session Acquisition, such as Chrome, Edge, Chromium, Brave, Vivaldi, Opera, or Arc.
+_Avoid_: Browser engine abstraction, arbitrary browser, Chrome-only dependency
+
+**Browser Discovery**:
+The OS-specific lookup that finds a Chromium Browser when the user does not provide an explicit browser path.
+_Avoid_: Hard-coded Chrome path, single-platform browser lookup
 
 **Travel Orchestration**:
 The application flow that ensures login, discovers characters, collects target selection, submits the travel order, and tracks completion.
@@ -137,6 +145,8 @@ _Avoid_: Live browser API context
 - A **Travel Flow** requires a saved or newly completed login session
 - **Session Refresh** updates the saved login session used by later **Travel Flows**
 - **Session Acquisition** produces an **Official Session**
+- **Session Acquisition** launches or attaches to one **Chromium Browser** through CDP
+- **Browser Discovery** chooses the **Chromium Browser** unless an **Advanced Option** provides an explicit browser path
 - **Official Session** provides the cookies used by official API calls during **Character Discovery** and **Travel Orders**
 - **WeGame Login Shortcut** starts from the official travel page, opens the Shengqu auto-handoff login frame, and lets that first-party page prepare login attributes before WeGame
 - **Travel Orchestration** coordinates one **Official Session**, one **Character Discovery** result, and at most one submitted **Travel Order**
@@ -171,7 +181,9 @@ _Avoid_: Live browser API context
 - The CLI should expose **Travel Flow** as the primary one-command journey: reuse a saved login session when present; otherwise prompt for login and continue.
 - A separate `login` command is allowed as **Session Refresh**, but it is secondary to the one-command **Travel Flow** and should overwrite the saved session.
 - The default command surface should stay minimal; browser, port, timeout, profile, and concurrency settings are **Advanced Options**.
-- Login should use browser-assisted **Session Acquisition**, keeping WeGame authentication in real Chrome instead of reimplementing third-party login.
+- Login should use browser-assisted **Session Acquisition**, keeping WeGame authentication in a real **Chromium Browser** instead of reimplementing third-party login.
+- **Browser Discovery** should prefer Chrome-compatible installs first, then fall back to other common Chromium-based browsers such as Edge, Chromium, Brave, Vivaldi, Opera, and Arc. Less common Chromium browsers remain supported through the explicit browser path **Advanced Option**.
+- Browser-related **Advanced Options** should use browser-neutral names. Legacy Chrome-specific option names may remain as compatibility aliases, but help text should teach the browser-neutral surface.
 - CDP should only support **Session Acquisition** and cookie extraction; official API calls should use typed HTTP clients, not page-injected JavaScript fetches.
 - After **Session Acquisition** succeeds, **Travel Orchestration** should use an **Official Session** through HTTP clients and no longer depend on the live browser page.
 - **Session Acquisition** should not simulate DOM clicks.
@@ -180,7 +192,7 @@ _Avoid_: Live browser API context
 - Official API JSON should be represented by thin typed DTOs at the boundary, avoiding dynamic JSON in the main flow.
 - Order submission should use one simple **Order Confirmation**. Queue estimates should not be shown in confirmation because the official data is not reliable enough for a user-facing promise.
 - **Order Tracking** should keep normal output quiet, showing ongoing spinner/status text and only writing lines when the status changes; verbose output may include every poll.
-- Tests should focus on **Offline Coverage**. Real Chrome login and official service behavior remain manual verification paths.
+- Tests should focus on **Offline Coverage**. Browser discovery, CDP endpoint validation, API parsing, and travel decisions should be covered without launching a real browser; live login and official service behavior remain manual verification paths.
 - **Character Discovery** should use a small bounded concurrency limit, defaulting to 4 unless implementation testing shows the official service needs a lower value.
 - **Partial Discovery Failure** should not block travel when at least one character is found; it should be summarized tersely, with details available in verbose output.
 - Target selection should only present **Available Targets**. If no targets are available, explain that before asking for input.
