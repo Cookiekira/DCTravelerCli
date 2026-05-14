@@ -45,10 +45,11 @@ jobs:
           cache: true
           cache-dependency-path: |
             packages.lock.json
+            packages.release.lock.json
             DCTravelCli.Tests/packages.lock.json
 
       - name: Restore
-        run: dotnet restore DCTravelCli.slnx --locked-mode
+        run: dotnet restore DCTravelCli.slnx --locked-mode -p:Configuration=Release
 
       - name: Test
         run: dotnet test DCTravelCli.slnx --configuration Release --no-restore
@@ -94,14 +95,28 @@ jobs:
           cache: true
           cache-dependency-path: |
             packages.lock.json
+            packages.release.lock.json
             DCTravelCli.Tests/packages.lock.json
 
-      - name: Restore
-        run: dotnet restore DCTravelCli.csproj --runtime ${{ matrix.rid }} --locked-mode
+      - name: Restore publish graph
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $args = @(
+            "restore",
+            "DCTravelCli.csproj",
+            "--use-lock-file",
+            "--locked-mode",
+            "--lock-file-path", "packages.release.lock.json",
+            "-p:Configuration=Release",
+            "-p:PublishReleaseArtifacts=true"
+          )
+          dotnet @args
 
       - name: Publish
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           $publishDir = Join-Path $env:RUNNER_TEMP "publish-${{ matrix.asset_suffix }}"
           $args = @(
             "publish",
@@ -110,17 +125,28 @@ jobs:
             "--runtime", "${{ matrix.rid }}",
             "--self-contained", "true",
             "--no-restore",
+            "-p:PublishReleaseArtifacts=true",
+            "-p:ContinuousIntegrationBuild=true",
+            "-p:DebugType=None",
+            "-p:DebugSymbols=false",
             "--output", $publishDir
           )
           dotnet @args
           Get-ChildItem -LiteralPath $publishDir -Recurse -Force |
             Where-Object { $_.Name -like "*.pdb" -or $_.Name -like "*.dbg" -or $_.Name -like "*.dSYM" } |
             Remove-Item -Recurse -Force
+          Get-ChildItem -LiteralPath $publishDir -Recurse -Force -File |
+            Sort-Object Length -Descending |
+            ForEach-Object {
+              $relativePath = [System.IO.Path]::GetRelativePath($publishDir, $_.FullName)
+              "{0,12:N0} {1}" -f $_.Length, $relativePath
+            }
           "PUBLISH_DIR=$publishDir" >> $env:GITHUB_ENV
 
       - name: Smoke test
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           $exe = if ("${{ runner.os }}" -eq "Windows") {
             Join-Path $env:PUBLISH_DIR "DCTravelCli.exe"
           } else {
@@ -134,6 +160,7 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           $packageDir = Join-Path $env:RUNNER_TEMP "packages"
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
           $baseName = "DCTravelCli-$env:RELEASE_TAG-${{ matrix.asset_suffix }}"

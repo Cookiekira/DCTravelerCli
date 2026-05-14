@@ -37,7 +37,7 @@ jobs:
             DCTravelCli.Tests/packages.lock.json
 
       - name: Restore
-        run: dotnet restore DCTravelCli.slnx --locked-mode
+        run: dotnet restore DCTravelCli.slnx --locked-mode -p:Configuration=Release
 
       - name: Build
         run: dotnet build DCTravelCli.slnx --configuration Release --no-restore
