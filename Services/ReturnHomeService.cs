@@ -1,7 +1,7 @@
-using DCTravelCli.Domain;
+using DCTravelerCli.Domain;
 using Spectre.Console;
 
-namespace DCTravelCli.Services;
+namespace DCTravelerCli.Services;
 
 public sealed class ReturnHomeService(IAnsiConsole console) : IReturnHomeService
 {

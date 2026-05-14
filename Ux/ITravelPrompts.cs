@@ -1,6 +1,6 @@
-using DCTravelCli.Domain;
+using DCTravelerCli.Domain;
 
-namespace DCTravelCli.Ux;
+namespace DCTravelerCli.Ux;
 
 public interface ITravelPrompts
 {

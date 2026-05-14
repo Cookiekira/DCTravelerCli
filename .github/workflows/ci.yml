@@ -34,13 +34,13 @@ jobs:
           cache: true
           cache-dependency-path: |
             packages.lock.json
-            DCTravelCli.Tests/packages.lock.json
+            DCTravelerCli.Tests/packages.lock.json
 
       - name: Restore
-        run: dotnet restore DCTravelCli.slnx --locked-mode -p:Configuration=Release
+        run: dotnet restore DCTravelerCli.slnx --locked-mode -p:Configuration=Release
 
       - name: Build
-        run: dotnet build DCTravelCli.slnx --configuration Release --no-restore
+        run: dotnet build DCTravelerCli.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test DCTravelCli.slnx --configuration Release --no-build
+        run: dotnet test DCTravelerCli.slnx --configuration Release --no-build

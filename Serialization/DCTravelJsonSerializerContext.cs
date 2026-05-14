@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DCTravelCli.Infrastructure;
-using DCTravelCli.Services.OfficialDtos;
+using DCTravelerCli.Infrastructure;
+using DCTravelerCli.Services.OfficialDtos;
 
-namespace DCTravelCli.Serialization;
+namespace DCTravelerCli.Serialization;
 
 [JsonSourceGenerationOptions(
     JsonSerializerDefaults.Web,

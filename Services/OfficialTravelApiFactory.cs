@@ -1,4 +1,4 @@
-namespace DCTravelCli.Services;
+namespace DCTravelerCli.Services;
 
 public sealed class OfficialTravelApiFactory : ITravelApiFactory
 {

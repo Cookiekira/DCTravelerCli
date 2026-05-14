@@ -1,6 +1,6 @@
-using DCTravelCli.Domain;
+using DCTravelerCli.Domain;
 
-namespace DCTravelCli.Services;
+namespace DCTravelerCli.Services;
 
 public static class SessionEntryPoint
 {

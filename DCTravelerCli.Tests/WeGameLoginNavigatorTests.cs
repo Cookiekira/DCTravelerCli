@@ -1,7 +1,7 @@
-using DCTravelCli.Domain;
-using DCTravelCli.Services;
+using DCTravelerCli.Domain;
+using DCTravelerCli.Services;
 
-namespace DCTravelCli.Tests;
+namespace DCTravelerCli.Tests;
 
 public sealed class WeGameLoginNavigatorTests
 {

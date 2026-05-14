@@ -1,7 +1,7 @@
-using DCTravelCli.Domain;
+using DCTravelerCli.Domain;
 using Spectre.Console;
 
-namespace DCTravelCli.Ux;
+namespace DCTravelerCli.Ux;
 
 public static class OrderTrackingOutput
 {

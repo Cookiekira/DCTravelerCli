@@ -1,8 +1,8 @@
 using ConsoleAppFramework;
-using DCTravelCli.Commands;
-using DCTravelCli.Infrastructure;
-using DCTravelCli.Services;
-using DCTravelCli.Ux;
+using DCTravelerCli.Commands;
+using DCTravelerCli.Infrastructure;
+using DCTravelerCli.Services;
+using DCTravelerCli.Ux;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 

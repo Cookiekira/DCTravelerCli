@@ -3,9 +3,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using DCTravelCli.Serialization;
+using DCTravelerCli.Serialization;
 
-namespace DCTravelCli.Infrastructure;
+namespace DCTravelerCli.Infrastructure;
 
 internal sealed class CdpBrowserSession : IAsyncDisposable
 {

@@ -1,7 +1,7 @@
-using DCTravelCli.Infrastructure;
-using DCTravelCli.Services;
+using DCTravelerCli.Infrastructure;
+using DCTravelerCli.Services;
 
-namespace DCTravelCli.Tests;
+namespace DCTravelerCli.Tests;
 
 public sealed class FileSessionStoreTests
 {

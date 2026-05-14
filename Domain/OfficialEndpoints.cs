@@ -1,4 +1,4 @@
-namespace DCTravelCli.Domain;
+namespace DCTravelerCli.Domain;
 
 public static class OfficialEndpoints
 {

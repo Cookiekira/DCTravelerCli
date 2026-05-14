@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <AssemblyName>DCTravelCli</AssemblyName>
-    <RootNamespace>DCTravelCli</RootNamespace>
+    <AssemblyName>DCTravelerCli</AssemblyName>
+    <RootNamespace>DCTravelerCli</RootNamespace>
     <RuntimeIdentifiers>win-x64;linux-x64;osx-arm64</RuntimeIdentifiers>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="DCTravelCli.Tests\**\*.cs" />
+    <Compile Remove="DCTravelerCli.Tests\**\*.cs" />
   </ItemGroup>
 
 </Project>

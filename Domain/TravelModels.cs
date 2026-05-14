@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace DCTravelCli.Domain;
+namespace DCTravelerCli.Domain;
 
 public sealed record SourceRegion(int AreaId, string AreaName, IReadOnlyList<SourceWorld> Worlds, int? State = null);
 

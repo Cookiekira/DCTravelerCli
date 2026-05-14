@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace DCTravelCli.Services.OfficialDtos;
+namespace DCTravelerCli.Services.OfficialDtos;
 
 public sealed record MigrationOrdersData
 {

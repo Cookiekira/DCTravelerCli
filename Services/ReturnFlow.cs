@@ -1,7 +1,7 @@
-using DCTravelCli.Ux;
+using DCTravelerCli.Ux;
 using Spectre.Console;
 
-namespace DCTravelCli.Services;
+namespace DCTravelerCli.Services;
 
 public sealed class ReturnFlow(
     ISessionAcquirer sessionAcquirer,

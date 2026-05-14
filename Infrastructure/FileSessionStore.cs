@@ -1,20 +1,20 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using DCTravelCli.Serialization;
-using DCTravelCli.Services;
+using DCTravelerCli.Serialization;
+using DCTravelerCli.Services;
 
-namespace DCTravelCli.Infrastructure;
+namespace DCTravelerCli.Infrastructure;
 
 public sealed class FileSessionStore : ISessionStore
 {
-    private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("DCTravelCli.session.v1");
+    private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("DCTravelerCli.session.v1");
     private readonly string sessionPath;
 
     public FileSessionStore()
         : this(Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "DCTravelCli",
+            "DCTravelerCli",
             "session.dat"))
     {
     }

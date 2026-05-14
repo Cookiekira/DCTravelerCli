@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.Json.Nodes;
-using DCTravelCli.Domain;
-using DCTravelCli.Serialization;
-using DCTravelCli.Services.OfficialDtos;
+using DCTravelerCli.Domain;
+using DCTravelerCli.Serialization;
+using DCTravelerCli.Services.OfficialDtos;
 
-namespace DCTravelCli.Services;
+namespace DCTravelerCli.Services;
 
 public static class OfficialResponseParser
 {

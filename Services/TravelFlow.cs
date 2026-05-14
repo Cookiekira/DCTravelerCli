@@ -1,8 +1,8 @@
-using DCTravelCli.Domain;
-using DCTravelCli.Ux;
+using DCTravelerCli.Domain;
+using DCTravelerCli.Ux;
 using Spectre.Console;
 
-namespace DCTravelCli.Services;
+namespace DCTravelerCli.Services;
 
 public sealed class TravelFlow(
     ISessionAcquirer sessionAcquirer,

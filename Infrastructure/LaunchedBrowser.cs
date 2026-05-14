@@ -1,5 +1,5 @@
 using System.Diagnostics;
 
-namespace DCTravelCli.Infrastructure;
+namespace DCTravelerCli.Infrastructure;
 
 internal sealed record LaunchedBrowser(Process? Process, DebugPage Page);

@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using DCTravelCli.Domain;
+using DCTravelerCli.Domain;
 
-namespace DCTravelCli.Services;
+namespace DCTravelerCli.Services;
 
 public sealed class CharacterDiscovery : ICharacterDiscovery
 {

@@ -1,8 +1,8 @@
-using DCTravelCli.Domain;
-using DCTravelCli.Services;
+using DCTravelerCli.Domain;
+using DCTravelerCli.Services;
 using Spectre.Console.Testing;
 
-namespace DCTravelCli.Tests;
+namespace DCTravelerCli.Tests;
 
 public sealed class ReturnHomeServiceTests
 {

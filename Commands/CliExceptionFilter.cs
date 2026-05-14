@@ -1,7 +1,7 @@
 using ConsoleAppFramework;
 using Spectre.Console;
 
-namespace DCTravelCli.Commands;
+namespace DCTravelerCli.Commands;
 
 internal sealed class CliExceptionFilter(
     IAnsiConsole console,

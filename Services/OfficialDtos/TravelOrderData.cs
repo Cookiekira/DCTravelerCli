@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace DCTravelCli.Services.OfficialDtos;
+namespace DCTravelerCli.Services.OfficialDtos;
 
 public sealed record TravelOrderData
 {

@@ -1,6 +1,6 @@
-using DCTravelCli.Domain;
+using DCTravelerCli.Domain;
 
-namespace DCTravelCli.Tests;
+namespace DCTravelerCli.Tests;
 
 public sealed class MigrationStatusTextTests
 {

@@ -46,13 +46,13 @@ jobs:
           cache-dependency-path: |
             packages.lock.json
             packages.release.lock.json
-            DCTravelCli.Tests/packages.lock.json
+            DCTravelerCli.Tests/packages.lock.json
 
       - name: Restore
-        run: dotnet restore DCTravelCli.slnx --locked-mode -p:Configuration=Release
+        run: dotnet restore DCTravelerCli.slnx --locked-mode -p:Configuration=Release
 
       - name: Test
-        run: dotnet test DCTravelCli.slnx --configuration Release --no-restore
+        run: dotnet test DCTravelerCli.slnx --configuration Release --no-restore
 
   publish:
     name: Publish ${{ matrix.asset_suffix }}
@@ -96,7 +96,7 @@ jobs:
           cache-dependency-path: |
             packages.lock.json
             packages.release.lock.json
-            DCTravelCli.Tests/packages.lock.json
+            DCTravelerCli.Tests/packages.lock.json
 
       - name: Restore publish graph
         shell: pwsh
@@ -104,7 +104,7 @@ jobs:
           $ErrorActionPreference = "Stop"
           $args = @(
             "restore",
-            "DCTravelCli.csproj",
+            "DCTravelerCli.csproj",
             "--use-lock-file",
             "--locked-mode",
             "--lock-file-path", "packages.release.lock.json",
@@ -120,7 +120,7 @@ jobs:
           $publishDir = Join-Path $env:RUNNER_TEMP "publish-${{ matrix.asset_suffix }}"
           $args = @(
             "publish",
-            "DCTravelCli.csproj",
+            "DCTravelerCli.csproj",
             "--configuration", "Release",
             "--runtime", "${{ matrix.rid }}",
             "--self-contained", "true",
@@ -148,9 +148,9 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $exe = if ("${{ runner.os }}" -eq "Windows") {
-            Join-Path $env:PUBLISH_DIR "DCTravelCli.exe"
+            Join-Path $env:PUBLISH_DIR "DCTravelerCli.exe"
           } else {
-            Join-Path $env:PUBLISH_DIR "DCTravelCli"
+            Join-Path $env:PUBLISH_DIR "DCTravelerCli"
           }
           if ("${{ runner.os }}" -ne "Windows") {
             chmod +x $exe
@@ -163,7 +163,7 @@ jobs:
           $ErrorActionPreference = "Stop"
           $packageDir = Join-Path $env:RUNNER_TEMP "packages"
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
-          $baseName = "DCTravelCli-$env:RELEASE_TAG-${{ matrix.asset_suffix }}"
+          $baseName = "DCTravelerCli-$env:RELEASE_TAG-${{ matrix.asset_suffix }}"
           if ("${{ matrix.archive }}" -eq "zip") {
             $assetPath = Join-Path $packageDir "$baseName.zip"
             Compress-Archive -Path (Join-Path $env:PUBLISH_DIR "*") -DestinationPath $assetPath -Force

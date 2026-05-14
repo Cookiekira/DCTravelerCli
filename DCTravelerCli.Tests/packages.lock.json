@@ -139,7 +139,7 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "dctravelcli": {
+      "dctravelercli": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "[10.0.0, )",

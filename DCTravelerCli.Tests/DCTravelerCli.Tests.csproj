@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DCTravelCli.csproj" />
+    <ProjectReference Include="..\DCTravelerCli.csproj" />
   </ItemGroup>
 
 </Project>

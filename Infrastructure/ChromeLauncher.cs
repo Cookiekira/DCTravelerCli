@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json;
-using DCTravelCli.Domain;
-using DCTravelCli.Services;
+using DCTravelerCli.Domain;
+using DCTravelerCli.Services;
 
-namespace DCTravelCli.Infrastructure;
+namespace DCTravelerCli.Infrastructure;
 
 internal sealed class ChromeLauncher
 {

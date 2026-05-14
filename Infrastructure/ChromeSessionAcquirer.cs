@@ -1,8 +1,8 @@
-using DCTravelCli.Domain;
-using DCTravelCli.Services;
+using DCTravelerCli.Domain;
+using DCTravelerCli.Services;
 using Spectre.Console;
 
-namespace DCTravelCli.Infrastructure;
+namespace DCTravelerCli.Infrastructure;
 
 internal sealed class ChromeSessionAcquirer(
     ChromeLauncher launcher,

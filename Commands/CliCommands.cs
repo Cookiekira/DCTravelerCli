@@ -1,8 +1,8 @@
 using ConsoleAppFramework;
-using DCTravelCli.Services;
+using DCTravelerCli.Services;
 using Spectre.Console;
 
-namespace DCTravelCli.Commands;
+namespace DCTravelerCli.Commands;
 
 public sealed class CliCommands(
     ITravelFlow travelFlow,
@@ -12,7 +12,7 @@ public sealed class CliCommands(
 {
     private static readonly string DefaultProfileDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "DCTravelCli",
+        "DCTravelerCli",
         "ChromeProfile");
 
     /// <summary>一键执行 FF14 国服超域传送流程。</summary>
