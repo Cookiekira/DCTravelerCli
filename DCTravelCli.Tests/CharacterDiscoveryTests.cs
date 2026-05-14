@@ -74,7 +74,30 @@ public sealed class CharacterDiscoveryTests
         }
 
         public Task<IReadOnlyList<TargetRegion>> GetTargetRegionsAsync(
-            Character character,
+            SourceRegion sourceRegion,
+            SourceWorld sourceWorld,
+            CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<MigrationOrderSummary>> GetMigrationOrdersAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<ActiveTravelOrder>> GetActiveTravelOrdersAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<SourceRegion>> GetReturnSourceRegionsAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ReturnHomeOrder> SubmitReturnHomeAsync(
+            ReturnHomeSelection selection,
             CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

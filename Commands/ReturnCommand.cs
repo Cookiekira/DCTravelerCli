@@ -3,19 +3,18 @@ using Spectre.Console.Cli;
 
 namespace DCTravelCli.Commands;
 
-public sealed class TravelCommand(ITravelFlow travelFlow) : AsyncCommand<TravelSettings>
+public sealed class ReturnCommand(IReturnFlow returnFlow) : AsyncCommand<ReturnSettings>
 {
     protected override async Task<int> ExecuteAsync(
         CommandContext context,
-        TravelSettings settings,
+        ReturnSettings settings,
         CancellationToken cancellationToken)
     {
-        await travelFlow.RunAsync(
-            new TravelRunOptions
+        await returnFlow.RunAsync(
+            new ReturnRunOptions
             {
                 Session = SettingsMapper.ToSessionOptions(settings),
                 AssumeYes = settings.Yes,
-                DiscoveryConcurrency = settings.DiscoveryConcurrency,
                 Verbose = settings.Verbose,
                 ReturnHome = new ReturnHomeOptions
                 {

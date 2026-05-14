@@ -14,7 +14,18 @@ public interface ITravelApi : IDisposable
         CancellationToken cancellationToken);
 
     Task<IReadOnlyList<TargetRegion>> GetTargetRegionsAsync(
-        Character character,
+        SourceRegion sourceRegion,
+        SourceWorld sourceWorld,
+        CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<MigrationOrderSummary>> GetMigrationOrdersAsync(CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<ActiveTravelOrder>> GetActiveTravelOrdersAsync(CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<SourceRegion>> GetReturnSourceRegionsAsync(CancellationToken cancellationToken);
+
+    Task<ReturnHomeOrder> SubmitReturnHomeAsync(
+        ReturnHomeSelection selection,
         CancellationToken cancellationToken);
 
     Task<TravelOrder> SubmitTravelOrderAsync(

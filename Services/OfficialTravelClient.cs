@@ -15,6 +15,7 @@ public sealed class OfficialTravelClient : ITravelApi
 
     private readonly HttpClientHandler handler;
     private readonly HttpClient httpClient;
+    private bool migrationOrdersInitialized;
 
     public OfficialTravelClient(OfficialSession session)
     {
@@ -89,7 +90,8 @@ public sealed class OfficialTravelClient : ITravelApi
     }
 
     public async Task<IReadOnlyList<TargetRegion>> GetTargetRegionsAsync(
-        Character character,
+        SourceRegion sourceRegion,
+        SourceWorld sourceWorld,
         CancellationToken cancellationToken)
     {
         var response = await GetOkAsync<GroupListData>(
@@ -97,12 +99,63 @@ public sealed class OfficialTravelClient : ITravelApi
             new Dictionary<string, string?>
             {
                 ["appId"] = OfficialEndpoints.AppId.ToString(),
-                ["areaId"] = character.SourceRegion.AreaId.ToString(),
-                ["groupId"] = character.SourceWorld.GroupId.ToString()
+                ["areaId"] = sourceRegion.AreaId.ToString(),
+                ["groupId"] = sourceWorld.GroupId.ToString()
             },
             cancellationToken);
 
         return OfficialResponseParser.ToTargetRegions(response.GroupList);
+    }
+
+    public async Task<IReadOnlyList<MigrationOrderSummary>> GetMigrationOrdersAsync(CancellationToken cancellationToken)
+    {
+        var orders = await GetMigrationOrderElementsAsync(cancellationToken);
+        return OfficialResponseParser.ToMigrationOrders(orders);
+    }
+
+    public async Task<IReadOnlyList<ActiveTravelOrder>> GetActiveTravelOrdersAsync(CancellationToken cancellationToken)
+    {
+        var orders = await GetMigrationOrderElementsAsync(cancellationToken);
+        return OfficialResponseParser.ToActiveTravelOrders(orders);
+    }
+
+    public async Task<IReadOnlyList<SourceRegion>> GetReturnSourceRegionsAsync(CancellationToken cancellationToken)
+    {
+        var response = await GetOkAsync<GroupListData>(
+            "/api/gmallgateway/queryGroupListCrossSource",
+            new Dictionary<string, string?>
+            {
+                ["appId"] = OfficialEndpoints.AppId.ToString()
+            },
+            cancellationToken);
+
+        return OfficialResponseParser.ToSourceRegions(response.GroupList);
+    }
+
+    public async Task<ReturnHomeOrder> SubmitReturnHomeAsync(
+        ReturnHomeSelection selection,
+        CancellationToken cancellationToken)
+    {
+        var response = await GetOkAsync<TravelBackData>(
+            "/api/orderserivce/travelBack",
+            new Dictionary<string, string?>
+            {
+                ["travelOrderId"] = selection.Order.OrderId,
+                ["groupId"] = selection.CurrentWorld.GroupId.ToString(),
+                ["groupCode"] = selection.CurrentWorld.GroupCode,
+                ["groupName"] = selection.CurrentWorld.GroupName
+            },
+            cancellationToken);
+
+        if (response.ResultCode != 0)
+        {
+            var message = string.IsNullOrWhiteSpace(response.ResultMessage)
+                ? $"官网返回接口返回错误 {response.ResultCode}。"
+                : $"官网返回接口返回错误 {response.ResultCode}：{response.ResultMessage}";
+            throw new OfficialApiException(response.ResultCode, message);
+        }
+
+        return new ReturnHomeOrder(response.OrderId, response.ResultMessage);
     }
 
     public async Task<TravelOrder> SubmitTravelOrderAsync(
@@ -204,6 +257,52 @@ public sealed class OfficialTravelClient : ITravelApi
 
         return response.Data
             ?? throw new OfficialApiException(response.ReturnCode, "官网接口没有返回 data。");
+    }
+
+    private async Task<IReadOnlyList<JsonElement>> GetMigrationOrderElementsAsync(CancellationToken cancellationToken)
+    {
+        const int pageSize = 20;
+        var orders = new List<JsonElement>();
+        var pageIndex = 1;
+        var totalPages = 1;
+
+        await EnsureMigrationOrdersInitializedAsync(cancellationToken);
+
+        while (pageIndex <= totalPages)
+        {
+            var response = await GetOkAsync<MigrationOrdersData>(
+                "/api/orderserivce/queryMigrationOrders",
+                new Dictionary<string, string?>
+                {
+                    ["appId"] = OfficialEndpoints.AppId.ToString(),
+                    ["pageIndex"] = pageIndex.ToString(),
+                    ["pageNum"] = pageSize.ToString()
+                },
+                cancellationToken);
+
+            orders.AddRange(OfficialResponseParser.ReadElements(response.OrderList));
+            totalPages = Math.Max(1, response.TotalPageNum);
+            pageIndex++;
+        }
+
+        return orders;
+    }
+
+    private async Task EnsureMigrationOrdersInitializedAsync(CancellationToken cancellationToken)
+    {
+        if (migrationOrdersInitialized)
+        {
+            return;
+        }
+
+        await GetRawAsync<JsonElement>(
+            "/api/orderserivce/pageInit",
+            new Dictionary<string, string?>
+            {
+                ["migrationType"] = "0"
+            },
+            cancellationToken);
+        migrationOrdersInitialized = true;
     }
 
     private async Task<OfficialResponse<T>> GetRawAsync<T>(

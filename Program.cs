@@ -14,8 +14,11 @@ services.AddSingleton<ISessionAcquirer, ChromeSessionAcquirer>();
 services.AddSingleton<IWeGameLoginNavigator, WeGameLoginNavigator>();
 services.AddSingleton<ITravelApiFactory, OfficialTravelApiFactory>();
 services.AddSingleton<ICharacterDiscovery, CharacterDiscovery>();
+services.AddSingleton<ICharacterSelectionCatalogBuilder, CharacterSelectionCatalogBuilder>();
+services.AddSingleton<IReturnHomeService, ReturnHomeService>();
 services.AddSingleton<ITravelPrompts, SpectreTravelPrompts>();
 services.AddSingleton<ITravelFlow, TravelFlow>();
+services.AddSingleton<IReturnFlow, ReturnFlow>();
 
 var registrar = new DependencyInjectionTypeRegistrar(services);
 var app = new CommandApp(registrar);
@@ -31,6 +34,9 @@ app.Configure(config =>
 
     config.AddCommand<LoginCommand>("login")
         .WithDescription("只刷新登录会话，不提交超域传送订单。");
+
+    config.AddCommand<ReturnCommand>("return")
+        .WithDescription("将旅行中的 FF14 角色返回原服。");
 
     config.SetExceptionHandler((exception, _) =>
     {

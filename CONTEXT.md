@@ -72,9 +72,21 @@ _Avoid_: Existing order, old order
 The official travel-back request that returns an away-from-home character from the Current Travel World to the Home World.
 _Avoid_: Go back, reset travel
 
+**Return Flow**:
+The command journey that returns one away-from-home character to its Home World without submitting a new Travel Order.
+_Avoid_: Return script, manual return workflow
+
+**Return Tracking**:
+The post-return polling loop that watches official order data until Return Home is confirmed, fails, or times out.
+_Avoid_: Return status spam
+
 **Return-Then-Travel**:
 A seamless Travel Flow path for an away-from-home character: Return Home first, then submit the new Travel Order from the Home World to the selected target.
 _Avoid_: Manual return first, chained teleport
+
+**Character Reconciliation**:
+The refresh-and-match step after Return Home that confirms the returned character can be safely used for the next Travel Order.
+_Avoid_: Guessing the role, stale role payload reuse
 
 **Order Confirmation**:
 A single explicit user approval before submitting a travel order to the official service.
@@ -141,6 +153,9 @@ _Avoid_: Live browser API context
 - A **Travel Order** has exactly one **Available Target** composed of a **Target Region** and **Target World**
 - **Return-Then-Travel** requires one **Return Home** before the new **Travel Order**
 - **Return Home** uses an **Active Travel Order** and the character's **Current Travel World**
+- A **Return Flow** selects one **Active Travel Order**, performs **Return Home**, and ends without submitting a new **Travel Order**
+- **Return Tracking** follows one **Return Home** attempt by polling official order data
+- **Return-Then-Travel** performs **Character Reconciliation** after **Return Home** before submitting the new **Travel Order**
 - A **Travel Order** requires exactly one **Order Confirmation** before submission
 - **Order Tracking** follows exactly one submitted **Travel Order**
 - **Offline Coverage** protects **Character Discovery**, target filtering, status mapping, and official response parsing
@@ -172,3 +187,9 @@ _Avoid_: Live browser API context
 - The first character picker should show a **Character Selection Catalog**, not only direct-travel characters from **Character Discovery**.
 - Away-from-home characters should remain selectable through **Active Travel Orders**. Selecting one starts **Return-Then-Travel** instead of asking the user to manually return first.
 - **Source World** must not be used as a synonym for an away-from-home character's **Current Travel World**. Use **Home World** and **Current Travel World** when both matter.
+- For **Return-Then-Travel**, the user should choose the new **Available Target** before **Return Home**, then approve one confirmation that shows both legs: Current Travel World to Home World, then Home World to Target World.
+- After **Return Home** completes, **Travel Orchestration** should refresh the character and target data before submitting the new **Travel Order**. If the chosen target is no longer available, stop after the return and explain that the character is home but the target cannot currently be used.
+- The CLI should expose a standalone **Return Flow** for users who only want to return a traveling character home.
+- `--yes` may skip local CLI confirmations for **Travel Flow**, **Return Flow**, and **Return-Then-Travel**, but it must not skip official second-step confirmation when the official service asks for it.
+- **Return Home** should use finite automatic retry rather than an infinite loop: wait about 65 seconds between attempts and stop after 3 failed submit/status attempts.
+- **Character Reconciliation** should prefer an official role id. If no role id is available from the **Active Travel Order**, match by Home World and role name only when that match is unique. If the match is missing or ambiguous, stop after the return and ask the user to rerun selection instead of guessing.
