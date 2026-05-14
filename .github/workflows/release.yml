@@ -4,10 +4,12 @@ on:
   push:
     tags:
       - "v*"
+      - "nightly-*"
+      - "canary-*"
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing tag to publish, for example v1.2.3
+        description: Existing tag to publish, for example v1.2.3, nightly-20260514-abc1234, or canary-20260514-abc1234
         required: true
         type: string
 
@@ -23,6 +25,7 @@ env:
   DOTNET_NOLOGO: "1"
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  RELEASE_PRERELEASE: ${{ startsWith(github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name, 'nightly-') || startsWith(github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name, 'canary-') }}
 
 jobs:
   test:
@@ -168,5 +171,9 @@ jobs:
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" release-assets/* --clobber
           else
-            gh release create "$RELEASE_TAG" release-assets/* --title "$RELEASE_TAG" --generate-notes --verify-tag
+            if [ "$RELEASE_PRERELEASE" = "true" ]; then
+              gh release create "$RELEASE_TAG" release-assets/* --title "$RELEASE_TAG" --generate-notes --verify-tag --prerelease
+            else
+              gh release create "$RELEASE_TAG" release-assets/* --title "$RELEASE_TAG" --generate-notes --verify-tag
+            fi
           fi
