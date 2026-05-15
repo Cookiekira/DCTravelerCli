@@ -6,7 +6,7 @@ namespace DCTravelerCli.Services;
 public sealed class CharacterDiscovery : ICharacterDiscovery
 {
     public async Task<CharacterDiscoveryResult> DiscoverAsync(
-        ITravelApi api,
+        ICharacterDiscoveryApi api,
         int concurrency,
         CancellationToken cancellationToken)
     {

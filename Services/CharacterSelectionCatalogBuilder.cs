@@ -5,7 +5,7 @@ namespace DCTravelerCli.Services;
 public sealed class CharacterSelectionCatalogBuilder(ICharacterDiscovery characterDiscovery) : ICharacterSelectionCatalogBuilder
 {
     public async Task<CharacterSelectionCatalog> BuildAsync(
-        ITravelApi api,
+        ICharacterSelectionCatalogApi api,
         int discoveryConcurrency,
         CancellationToken cancellationToken)
     {

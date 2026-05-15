@@ -11,4 +11,6 @@ public sealed record TravelRunOptions
     public bool Verbose { get; init; }
 
     public ReturnHomeOptions ReturnHome { get; init; } = new();
+
+    public TimeSpan OrderTrackingPollInterval { get; init; } = TimeSpan.FromSeconds(3);
 }

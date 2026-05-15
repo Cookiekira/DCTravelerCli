@@ -30,7 +30,22 @@ var app = ConsoleApp.Create()
 app.UseFilter<CliExceptionFilter>();
 app.Add<CliCommands>();
 
-await app.RunAsync(NormalizeHelpArgs(args));
+using var shutdown = new CancellationTokenSource();
+var shutdownRequested = 0;
+Console.CancelKeyPress += (_, eventArgs) =>
+{
+    if (Interlocked.Exchange(ref shutdownRequested, 1) == 0)
+    {
+        eventArgs.Cancel = true;
+        Console.Error.WriteLine("收到 Ctrl+C，正在取消。若卡在交互提示中，请再次按 Ctrl+C 强制退出。");
+        shutdown.Cancel();
+        return;
+    }
+
+    eventArgs.Cancel = false;
+};
+
+await app.RunAsync(NormalizeHelpArgs(args), shutdown.Token);
 return Environment.ExitCode;
 
 static string[] NormalizeHelpArgs(string[] args)

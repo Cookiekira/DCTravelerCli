@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using System.Text.Json.Nodes;
 using DCTravelerCli.Domain;
 using DCTravelerCli.Serialization;
 using DCTravelerCli.Services.OfficialDtos;
@@ -11,6 +12,7 @@ public sealed class OfficialTravelClient : ITravelApi
 {
     private readonly HttpClientHandler handler;
     private readonly HttpClient httpClient;
+    private readonly Dictionary<string, JsonObject> characterSubmissionPayloads = new(StringComparer.Ordinal);
     private bool migrationOrdersInitialized;
 
     public OfficialTravelClient(OfficialSession session)
@@ -85,7 +87,13 @@ public sealed class OfficialTravelClient : ITravelApi
             GetResponseTypeInfo<RoleListData>(),
             cancellationToken);
 
-        return OfficialResponseParser.ToCharacters(response.RoleList, sourceRegion, sourceWorld);
+        var characters = OfficialResponseParser.ToOfficialCharacters(response.RoleList, sourceRegion, sourceWorld);
+        foreach (var character in characters)
+        {
+            characterSubmissionPayloads[BuildCharacterPayloadKey(character.Character)] = character.SubmissionPayload;
+        }
+
+        return characters.Select(character => character.Character).ToArray();
     }
 
     public async Task<IReadOnlyList<TargetRegion>> GetTargetRegionsAsync(
@@ -166,7 +174,12 @@ public sealed class OfficialTravelClient : ITravelApi
     {
         var character = selection.Character;
         var target = selection.Target;
-        var roleList = $"[{character.OfficialPayload.ToJsonString()}]";
+        if (!characterSubmissionPayloads.TryGetValue(BuildCharacterPayloadKey(character), out var submissionPayload))
+        {
+            throw new InvalidOperationException("缺少官网下单所需的角色提交数据。请重新刷新角色列表后再试。");
+        }
+
+        var roleList = $"[{submissionPayload.ToJsonString()}]";
 
         var response = await GetOkAsync<TravelOrderData>(
             "/api/orderserivce/travelOrder",
@@ -347,5 +360,10 @@ public sealed class OfficialTravelClient : ITravelApi
             parameters.Select(pair =>
                 $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value ?? string.Empty)}"));
         return builder.Uri;
+    }
+
+    private static string BuildCharacterPayloadKey(Character character)
+    {
+        return $"{character.SourceRegion.AreaId}:{character.SourceWorld.GroupId}:{character.RoleId}";
     }
 }

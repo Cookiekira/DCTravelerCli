@@ -6,7 +6,7 @@ namespace DCTravelerCli.Services;
 public sealed class ReturnHomeService(IAnsiConsole console) : IReturnHomeService
 {
     public async Task<ReturnHomeResult> ReturnHomeAsync(
-        ITravelApi api,
+        IReturnHomeApi api,
         ActiveTravelOrder order,
         ReturnHomeOptions options,
         CancellationToken cancellationToken)
@@ -14,6 +14,7 @@ public sealed class ReturnHomeService(IAnsiConsole console) : IReturnHomeService
         var selection = await ResolveReturnHomeSelectionAsync(api, order, cancellationToken);
         Exception? lastException = null;
         ReturnHomeOrder? lastReturnOrder = null;
+        ReturnHomeOutcome lastOutcome = ReturnHomeOutcome.ExhaustedRetry;
 
         for (var attempt = 1; attempt <= options.MaxAttempts; attempt++)
         {
@@ -28,17 +29,21 @@ public sealed class ReturnHomeService(IAnsiConsole console) : IReturnHomeService
                 console.MarkupLine($"[grey]提交超域返回请求（第 {attempt}/{options.MaxAttempts} 次）...[/]");
                 lastReturnOrder = await api.SubmitReturnHomeAsync(selection, cancellationToken);
 
-                if (await PollReturnCompleteAsync(
+                lastOutcome = await PollReturnCompleteAsync(
                     api,
                     order.OrderId,
                     lastReturnOrder.OrderId,
                     options,
-                    cancellationToken))
+                    cancellationToken);
+
+                if (lastOutcome == ReturnHomeOutcome.Confirmed)
                 {
                     return new ReturnHomeResult(order, lastReturnOrder);
                 }
 
-                console.MarkupLine("[yellow]本次返回状态未确认，将重试。[/]");
+                console.MarkupLine(lastOutcome == ReturnHomeOutcome.OfficialFailure
+                    ? "[yellow]本次返回已失败，将重试。[/]"
+                    : "[yellow]本次返回状态未确认，将重试。[/]");
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
@@ -48,13 +53,15 @@ public sealed class ReturnHomeService(IAnsiConsole console) : IReturnHomeService
         }
 
         var message = lastException is not null
-            ? lastException.Message
-            : "返回状态未在限定时间内确认。";
-        throw new InvalidOperationException($"超域返回失败，已尝试 {options.MaxAttempts} 次：{message}");
+            ? $"超域返回失败，已尝试 {options.MaxAttempts} 次：{lastException.Message}"
+            : lastOutcome == ReturnHomeOutcome.OfficialFailure
+                ? $"超域返回失败，已尝试 {options.MaxAttempts} 次：官网订单显示本次返回失败。"
+                : $"超域返回失败，已尝试 {options.MaxAttempts} 次：返回状态未在限定时间内确认。";
+        return new ReturnHomeResult(order, lastReturnOrder, lastOutcome, message);
     }
 
     private static async Task<ReturnHomeSelection> ResolveReturnHomeSelectionAsync(
-        ITravelApi api,
+        IReturnHomeApi api,
         ActiveTravelOrder order,
         CancellationToken cancellationToken)
     {
@@ -80,8 +87,8 @@ public sealed class ReturnHomeService(IAnsiConsole console) : IReturnHomeService
         return new ReturnHomeSelection(order, currentRegion, currentWorld);
     }
 
-    private async Task<bool> PollReturnCompleteAsync(
-        ITravelApi api,
+    private async Task<ReturnHomeOutcome> PollReturnCompleteAsync(
+        IReturnHomeApi api,
         string travelOrderId,
         string? returnOrderId,
         ReturnHomeOptions options,
@@ -94,13 +101,13 @@ public sealed class ReturnHomeService(IAnsiConsole console) : IReturnHomeService
             if (IsReturnConfirmed(orders, travelOrderId, returnOrderId))
             {
                 console.MarkupLine("[green]超域返回已完成。[/]");
-                return true;
+                return ReturnHomeOutcome.Confirmed;
             }
 
             if (IsReturnFailed(orders, travelOrderId, returnOrderId))
             {
                 console.MarkupLine("[yellow]官网订单显示本次返回失败。[/]");
-                return false;
+                return ReturnHomeOutcome.OfficialFailure;
             }
 
             if (options.Verbose)
@@ -114,7 +121,7 @@ public sealed class ReturnHomeService(IAnsiConsole console) : IReturnHomeService
             }
         }
 
-        return false;
+        return ReturnHomeOutcome.ExhaustedRetry;
     }
 
     private static bool IsReturnConfirmed(

@@ -47,7 +47,7 @@ public sealed class OfficialResponseParserTests
     }
 
     [Fact]
-    public void ToCharacters_preserves_official_payload_and_adds_key()
+    public void ToCharacters_reads_character_facts()
     {
         using var document = JsonDocument.Parse(
             """
@@ -66,8 +66,30 @@ public sealed class OfficialResponseParserTests
         Assert.Single(characters);
         Assert.Equal("100", characters[0].RoleId);
         Assert.Equal("Cookie", characters[0].RoleName);
-        Assert.Equal("PLD", characters[0].OfficialPayload["job"]!.GetValue<string>());
-        Assert.Equal(0, characters[0].OfficialPayload["key"]!.GetValue<int>());
+        Assert.Equal("红玉海", characters[0].SourceWorld.GroupName);
+    }
+
+    [Fact]
+    public void ToOfficialCharacters_preserves_submission_payload_and_adds_key()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            {
+              "roleList": "[{\"roleId\":\"100\",\"roleName\":\"Cookie\",\"job\":\"PLD\"}]"
+            }
+            """);
+        var region = new SourceRegion(1, "陆行鸟", []);
+        var world = new SourceWorld(10, "A", "红玉海");
+
+        var characters = OfficialResponseParser.ToOfficialCharacters(
+            document.RootElement.GetProperty("roleList"),
+            region,
+            world);
+
+        Assert.Single(characters);
+        Assert.Equal("100", characters[0].Character.RoleId);
+        Assert.Equal("PLD", characters[0].SubmissionPayload["job"]!.GetValue<string>());
+        Assert.Equal(0, characters[0].SubmissionPayload["key"]!.GetValue<int>());
     }
 
     [Fact]

@@ -5,7 +5,7 @@ namespace DCTravelerCli.Services;
 public interface ICharacterSelectionCatalogBuilder
 {
     Task<CharacterSelectionCatalog> BuildAsync(
-        ITravelApi api,
+        ICharacterSelectionCatalogApi api,
         int discoveryConcurrency,
         CancellationToken cancellationToken);
 }

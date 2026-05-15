@@ -24,7 +24,8 @@ public sealed class ReturnHomeServiceTests
             FastOptions(),
             CancellationToken.None);
 
-        Assert.Equal("R-1", result.ReturnOrder.OrderId);
+        Assert.Equal("R-1", result.ReturnOrder!.OrderId);
+        Assert.Equal(ReturnHomeOutcome.Confirmed, result.Outcome);
         Assert.Equal(1, api.SubmitCount);
     }
 
@@ -48,6 +49,69 @@ public sealed class ReturnHomeServiceTests
             CancellationToken.None);
 
         Assert.Equal(2, api.SubmitCount);
+    }
+
+    [Fact]
+    public async Task ReturnHomeAsync_reports_official_return_failure()
+    {
+        var order = CreateActiveOrder();
+        var api = new FakeTravelApi(order)
+        {
+            MigrationOrderResponses =
+            [
+                [new MigrationOrderSummary("R-1", 5, 5, 0, "返回失败")]
+            ]
+        };
+
+        var result = await new ReturnHomeService(new TestConsole()).ReturnHomeAsync(
+            api,
+            order,
+            FastOptions(),
+            CancellationToken.None);
+
+        Assert.Equal(ReturnHomeOutcome.OfficialFailure, result.Outcome);
+        Assert.Contains("官网订单显示本次返回失败", result.Message);
+    }
+
+    [Fact]
+    public async Task ReturnHomeAsync_reports_exhausted_polling()
+    {
+        var order = CreateActiveOrder();
+        var api = new FakeTravelApi(order)
+        {
+            MigrationOrderResponses =
+            [
+                [new MigrationOrderSummary("T-1", 4, 5, 1, "旅行中")]
+            ]
+        };
+
+        var result = await new ReturnHomeService(new TestConsole()).ReturnHomeAsync(
+            api,
+            order,
+            FastOptions(),
+            CancellationToken.None);
+
+        Assert.Equal(ReturnHomeOutcome.ExhaustedRetry, result.Outcome);
+        Assert.Contains("返回状态未在限定时间内确认", result.Message);
+    }
+
+    [Fact]
+    public async Task ReturnHomeAsync_reports_exhausted_submit_attempts()
+    {
+        var order = CreateActiveOrder();
+        var api = new FakeTravelApi(order)
+        {
+            SubmitException = new InvalidOperationException("submit boom")
+        };
+
+        var result = await new ReturnHomeService(new TestConsole()).ReturnHomeAsync(
+            api,
+            order,
+            FastOptions(),
+            CancellationToken.None);
+
+        Assert.Equal(ReturnHomeOutcome.ExhaustedRetry, result.Outcome);
+        Assert.Contains("submit boom", result.Message);
     }
 
     [Fact]
@@ -94,7 +158,7 @@ public sealed class ReturnHomeServiceTests
             "旅行中");
     }
 
-    private sealed class FakeTravelApi(ActiveTravelOrder order) : ITravelApi
+    private sealed class FakeTravelApi(ActiveTravelOrder order) : IReturnHomeApi
     {
         private int migrationOrderReadCount;
 
@@ -110,42 +174,13 @@ public sealed class ReturnHomeServiceTests
 
         public IReadOnlyList<IReadOnlyList<MigrationOrderSummary>> MigrationOrderResponses { get; init; } = [];
 
-        public Task<LoginProbe> ProbeLoginAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<SourceRegion>> GetSourceRegionsAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<Character>> GetCharactersAsync(
-            SourceRegion sourceRegion,
-            SourceWorld sourceWorld,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<TargetRegion>> GetTargetRegionsAsync(
-            SourceRegion sourceRegion,
-            SourceWorld sourceWorld,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        public Exception? SubmitException { get; init; }
 
         public Task<IReadOnlyList<MigrationOrderSummary>> GetMigrationOrdersAsync(CancellationToken cancellationToken)
         {
             var index = Math.Min(migrationOrderReadCount, MigrationOrderResponses.Count - 1);
             migrationOrderReadCount++;
             return Task.FromResult(MigrationOrderResponses[index]);
-        }
-
-        public Task<IReadOnlyList<ActiveTravelOrder>> GetActiveTravelOrdersAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
 
         public Task<IReadOnlyList<SourceRegion>> GetReturnSourceRegionsAsync(CancellationToken cancellationToken)
@@ -158,33 +193,12 @@ public sealed class ReturnHomeServiceTests
             CancellationToken cancellationToken)
         {
             SubmitCount++;
+            if (SubmitException is not null)
+            {
+                throw SubmitException;
+            }
+
             return Task.FromResult(new ReturnHomeOrder("R-1", "ok"));
-        }
-
-        public Task<TravelOrder> SubmitTravelOrderAsync(
-            TravelSelection selection,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderStatusSnapshot> GetOrderStatusAsync(
-            TravelOrder order,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ConfirmOrderAsync(
-            TravelOrder order,
-            bool confirm,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

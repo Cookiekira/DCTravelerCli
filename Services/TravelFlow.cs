@@ -72,7 +72,12 @@ public sealed class TravelFlow(
             return;
         }
 
-        await SubmitAndTrackTravelOrderAsync(api, selection, options.Verbose, cancellationToken);
+        await SubmitAndTrackTravelOrderAsync(
+            api,
+            selection,
+            options.Verbose,
+            options.OrderTrackingPollInterval,
+            cancellationToken);
     }
 
     private async Task RunReturnThenTravelAsync(
@@ -96,11 +101,12 @@ public sealed class TravelFlow(
             return;
         }
 
-        await returnHomeService.ReturnHomeAsync(
+        var returnHomeResult = await returnHomeService.ReturnHomeAsync(
             api,
             order,
             options.ReturnHome with { Verbose = options.Verbose },
             cancellationToken);
+        returnHomeResult.ThrowIfNotConfirmed();
 
         var refreshedCharacter = await RefreshReturnedCharacterAsync(api, order, cancellationToken);
         var refreshedTarget = await RefreshSelectedTargetAsync(
@@ -112,6 +118,7 @@ public sealed class TravelFlow(
             api,
             new TravelSelection(refreshedCharacter, refreshedTarget),
             options.Verbose,
+            options.OrderTrackingPollInterval,
             cancellationToken);
     }
 
@@ -187,6 +194,7 @@ public sealed class TravelFlow(
         ITravelApi api,
         TravelSelection selection,
         bool verbose,
+        TimeSpan pollInterval,
         CancellationToken cancellationToken)
     {
         var order = await console.Status()
@@ -194,13 +202,14 @@ public sealed class TravelFlow(
             .StartAsync("正在提交订单...", _ => api.SubmitTravelOrderAsync(selection, cancellationToken));
 
         console.MarkupLine($"订单已提交：[green]{Markup.Escape(order.OrderId)}[/]");
-        await TrackOrderAsync(api, order, verbose, cancellationToken);
+        await TrackOrderAsync(api, order, verbose, pollInterval, cancellationToken);
     }
 
     private async Task TrackOrderAsync(
         ITravelApi api,
         TravelOrder order,
         bool verbose,
+        TimeSpan pollInterval,
         CancellationToken cancellationToken)
     {
         MigrationStatus? previousStatus = null;
@@ -211,7 +220,7 @@ public sealed class TravelFlow(
                 .Spinner(Spinner.Known.Dots)
                 .StartAsync("等待订单状态...", async context =>
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+                    await Task.Delay(pollInterval, cancellationToken);
                     var status = await api.GetOrderStatusAsync(order, cancellationToken);
                     context.Status(MigrationStatusText.Format(status.Status));
                     return status;

@@ -41,11 +41,12 @@ public sealed class ReturnFlow(
             return;
         }
 
-        await returnHomeService.ReturnHomeAsync(
+        var result = await returnHomeService.ReturnHomeAsync(
             api,
             order,
             options.ReturnHome with { Verbose = options.Verbose },
             cancellationToken);
+        result.ThrowIfNotConfirmed();
 
         console.MarkupLine($"[green]角色 {Markup.Escape(order.RoleName)} 已返回原服。[/]");
     }

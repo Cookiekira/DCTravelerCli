@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using DCTravelerCli.Domain;
 using DCTravelerCli.Services;
 
@@ -46,8 +45,7 @@ public sealed class CharacterSelectionCatalogBuilderTests
             "100",
             "Cookie",
             homeRegion,
-            homeWorld,
-            new JsonObject { ["roleId"] = "100", ["roleName"] = "Cookie" });
+            homeWorld);
         var api = new FakeTravelApi
         {
             ActiveTravelOrders =
@@ -112,7 +110,7 @@ public sealed class CharacterSelectionCatalogBuilderTests
     private sealed class FakeCharacterDiscovery(IReadOnlyList<Character>? characters = null) : ICharacterDiscovery
     {
         public Task<CharacterDiscoveryResult> DiscoverAsync(
-            ITravelApi api,
+            ICharacterDiscoveryApi api,
             int concurrency,
             CancellationToken cancellationToken)
         {
@@ -120,14 +118,9 @@ public sealed class CharacterSelectionCatalogBuilderTests
         }
     }
 
-    private sealed class FakeTravelApi : ITravelApi
+    private sealed class FakeTravelApi : ICharacterSelectionCatalogApi
     {
         public IReadOnlyList<ActiveTravelOrder> ActiveTravelOrders { get; init; } = [];
-
-        public Task<LoginProbe> ProbeLoginAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
 
         public Task<IReadOnlyList<SourceRegion>> GetSourceRegionsAsync(CancellationToken cancellationToken)
         {
@@ -141,61 +134,9 @@ public sealed class CharacterSelectionCatalogBuilderTests
         {
             throw new NotImplementedException();
         }
-
-        public Task<IReadOnlyList<TargetRegion>> GetTargetRegionsAsync(
-            SourceRegion sourceRegion,
-            SourceWorld sourceWorld,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadOnlyList<MigrationOrderSummary>> GetMigrationOrdersAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<IReadOnlyList<ActiveTravelOrder>> GetActiveTravelOrdersAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(ActiveTravelOrders);
-        }
-
-        public Task<IReadOnlyList<SourceRegion>> GetReturnSourceRegionsAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ReturnHomeOrder> SubmitReturnHomeAsync(
-            ReturnHomeSelection selection,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TravelOrder> SubmitTravelOrderAsync(
-            TravelSelection selection,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderStatusSnapshot> GetOrderStatusAsync(
-            TravelOrder order,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ConfirmOrderAsync(
-            TravelOrder order,
-            bool confirm,
-            CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

@@ -18,6 +18,7 @@ internal sealed class CliExceptionFilter(
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             Environment.ExitCode = 1;
+            console.MarkupLine("[yellow]已取消，正在退出。[/]");
         }
         catch (Exception exception)
         {

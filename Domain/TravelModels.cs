@@ -1,5 +1,3 @@
-using System.Text.Json.Nodes;
-
 namespace DCTravelerCli.Domain;
 
 public sealed record SourceRegion(int AreaId, string AreaName, IReadOnlyList<SourceWorld> Worlds, int? State = null);
@@ -14,8 +12,7 @@ public sealed record Character(
     string RoleId,
     string RoleName,
     SourceRegion SourceRegion,
-    SourceWorld SourceWorld,
-    JsonObject OfficialPayload);
+    SourceWorld SourceWorld);
 
 public sealed record ActiveTravelOrder(
     string OrderId,
@@ -57,7 +54,34 @@ public sealed record TravelOrder(string OrderId);
 
 public sealed record ReturnHomeOrder(string? OrderId, string? Message);
 
-public sealed record ReturnHomeResult(ActiveTravelOrder Order, ReturnHomeOrder ReturnOrder);
+public enum ReturnHomeOutcome
+{
+    Confirmed,
+    OfficialFailure,
+    ExhaustedRetry
+}
+
+public sealed record ReturnHomeResult(
+    ActiveTravelOrder Order,
+    ReturnHomeOrder? ReturnOrder,
+    ReturnHomeOutcome Outcome,
+    string? Message)
+{
+    public ReturnHomeResult(ActiveTravelOrder order, ReturnHomeOrder returnOrder)
+        : this(order, returnOrder, ReturnHomeOutcome.Confirmed, null)
+    {
+    }
+
+    public void ThrowIfNotConfirmed()
+    {
+        if (Outcome == ReturnHomeOutcome.Confirmed)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(Message ?? "超域返回未确认完成。");
+    }
+}
 
 public sealed record OrderStatusSnapshot(MigrationStatus Status, string? Message);
 

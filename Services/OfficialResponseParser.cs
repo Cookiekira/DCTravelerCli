@@ -33,8 +33,18 @@ public static class OfficialResponseParser
 
     public static IReadOnlyList<Character> ToCharacters(JsonElement roleList, SourceRegion sourceRegion, SourceWorld sourceWorld)
     {
+        return ToOfficialCharacters(roleList, sourceRegion, sourceWorld)
+            .Select(character => character.Character)
+            .ToArray();
+    }
+
+    internal static IReadOnlyList<OfficialCharacter> ToOfficialCharacters(
+        JsonElement roleList,
+        SourceRegion sourceRegion,
+        SourceWorld sourceWorld)
+    {
         var roles = ReadElements(roleList);
-        var characters = new List<Character>(roles.Count);
+        var characters = new List<OfficialCharacter>(roles.Count);
 
         for (var i = 0; i < roles.Count; i++)
         {
@@ -50,7 +60,9 @@ public static class OfficialResponseParser
                 ?? throw new InvalidOperationException("角色数据不是 JSON 对象。");
             payload["key"] = i;
 
-            characters.Add(new Character(roleId, roleName, sourceRegion, sourceWorld, payload));
+            characters.Add(new OfficialCharacter(
+                new Character(roleId, roleName, sourceRegion, sourceWorld),
+                payload));
         }
 
         return characters;
@@ -282,3 +294,5 @@ public static class OfficialResponseParser
         };
     }
 }
+
+internal sealed record OfficialCharacter(Character Character, JsonObject SubmissionPayload);
