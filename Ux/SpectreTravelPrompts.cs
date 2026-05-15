@@ -5,6 +5,8 @@ namespace DCTravelerCli.Ux;
 
 public sealed class SpectreTravelPrompts(IAnsiConsole console) : ITravelPrompts
 {
+    private const string SearchHelpText = "输入筛选，方向键选择，Enter 确认";
+
     public CharacterSelection SelectCharacter(IReadOnlyList<CharacterSelection> characters)
     {
         return console.Prompt(
@@ -12,7 +14,7 @@ public sealed class SpectreTravelPrompts(IAnsiConsole console) : ITravelPrompts
                 .Title("选择角色")
                 .PageSize(10)
                 .EnableSearch()
-                .SearchPlaceholderText("搜索角色/区服...")
+                .SearchPlaceholderText(SearchHelpText)
                 .MoreChoicesText("[grey](上下移动查看更多角色)[/]")
                 .UseConverter(FormatCharacterSelection)
                 .AddChoices(characters));
@@ -25,7 +27,7 @@ public sealed class SpectreTravelPrompts(IAnsiConsole console) : ITravelPrompts
                 .Title("选择要返回原服的角色")
                 .PageSize(10)
                 .EnableSearch()
-                .SearchPlaceholderText("搜索角色/区服...")
+                .SearchPlaceholderText(SearchHelpText)
                 .MoreChoicesText("[grey](上下移动查看更多订单)[/]")
                 .UseConverter(order =>
                     $"{Markup.Escape(order.RoleName)} {FormatRoleId(order.RoleId)} " +
@@ -41,7 +43,7 @@ public sealed class SpectreTravelPrompts(IAnsiConsole console) : ITravelPrompts
                 .Title("选择目标大区")
                 .PageSize(8)
                 .EnableSearch()
-                .SearchPlaceholderText("搜索目标大区...")
+                .SearchPlaceholderText(SearchHelpText)
                 .UseConverter(region => Markup.Escape(region.AreaName))
                 .AddChoices(regions));
     }
@@ -53,7 +55,7 @@ public sealed class SpectreTravelPrompts(IAnsiConsole console) : ITravelPrompts
                 .Title($"选择 [green]{Markup.Escape(region.AreaName)}[/] 的目标服务器")
                 .PageSize(12)
                 .EnableSearch()
-                .SearchPlaceholderText("搜索目标服务器...")
+                .SearchPlaceholderText(SearchHelpText)
                 .UseConverter(world => Markup.Escape(world.GroupName))
                 .AddChoices(region.Worlds));
     }
