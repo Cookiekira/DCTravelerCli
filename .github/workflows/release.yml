@@ -46,6 +46,7 @@ jobs:
           cache-dependency-path: |
             packages.lock.json
             packages.release.lock.json
+            packages.release-aot.lock.json
             DCTravelerCli.Tests/packages.lock.json
 
       - name: Restore
@@ -69,6 +70,7 @@ jobs:
             flavor: stable
             asset_suffix: win-x64
             publish_aot: false
+            lock_file: packages.release.lock.json
             experimental: false
           - os: windows-latest
             rid: win-x64
@@ -76,6 +78,7 @@ jobs:
             flavor: stable
             asset_suffix: win-x64-aot
             publish_aot: true
+            lock_file: packages.release-aot.lock.json
             experimental: false
           - os: ubuntu-latest
             rid: linux-x64
@@ -83,6 +86,7 @@ jobs:
             flavor: stable
             asset_suffix: linux-x64
             publish_aot: false
+            lock_file: packages.release.lock.json
             experimental: false
           - os: macos-latest
             rid: osx-arm64
@@ -90,6 +94,7 @@ jobs:
             flavor: stable
             asset_suffix: osx-arm64
             publish_aot: false
+            lock_file: packages.release.lock.json
             experimental: false
 
     steps:
@@ -106,6 +111,7 @@ jobs:
           cache-dependency-path: |
             packages.lock.json
             packages.release.lock.json
+            packages.release-aot.lock.json
             DCTravelerCli.Tests/packages.lock.json
 
       - name: Restore publish graph
@@ -117,7 +123,7 @@ jobs:
             "DCTravelerCli.csproj",
             "--use-lock-file",
             "--locked-mode",
-            "--lock-file-path", "packages.release.lock.json",
+            "--lock-file-path", "${{ matrix.lock_file }}",
             "-p:Configuration=Release",
             "-p:PublishReleaseArtifacts=true"
           )
