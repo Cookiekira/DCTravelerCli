@@ -242,3 +242,37 @@ jobs:
               gh release create "$RELEASE_TAG" release-assets/* --title "$RELEASE_TAG" --generate-notes --verify-tag
             fi
           fi
+
+  update-winget:
+    name: Update WinGet manifest
+    needs: release
+    if: ${{ (github.event_name == 'workflow_dispatch' && startsWith(inputs.tag, 'v')) || (github.event_name == 'push' && startsWith(github.ref_name, 'v')) }}
+    runs-on: windows-latest
+
+    steps:
+      - name: Download WinGetCreate
+        shell: pwsh
+        run: Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+
+      - name: Submit WinGet update
+        shell: pwsh
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            throw "Missing WINGET_CREATE_GITHUB_TOKEN secret. Create a classic GitHub PAT with public_repo scope and save it as this repository secret."
+          }
+
+          $version = $env:RELEASE_TAG -replace "^v", ""
+          $installerUrl = "https://github.com/Cookiekira/DCTravelerCli/releases/download/$env:RELEASE_TAG/DCTravelerCli-$env:RELEASE_TAG-win-x64-aot.zip"
+          $releaseNotesUrl = "https://github.com/Cookiekira/DCTravelerCli/releases/tag/$env:RELEASE_TAG"
+          $releaseDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd")
+
+          .\wingetcreate.exe update Cookiekira.DCTravelerCli `
+            --version $version `
+            --urls "$installerUrl|x64" `
+            --release-notes-url $releaseNotesUrl `
+            --release-date $releaseDate `
+            --submit `
+            --no-open
