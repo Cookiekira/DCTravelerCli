@@ -37,7 +37,8 @@ Console.CancelKeyPress += (_, eventArgs) =>
     if (Interlocked.Exchange(ref shutdownRequested, 1) == 0)
     {
         eventArgs.Cancel = true;
-        Console.Error.WriteLine("收到 Ctrl+C，正在取消。若卡在交互提示中，请再次按 Ctrl+C 强制退出。");
+        Console.Error.WriteLine();
+        Console.Error.WriteLine("正在取消。再次按 Ctrl+C 强制退出。");
         shutdown.Cancel();
         return;
     }
