@@ -14,7 +14,19 @@ DC Traveler CLI 是一个用于 FF14 国服超域传送的命令行工具。它�
 
 ## 安装
 
-从 [GitHub Releases](https://github.com/Cookiekira/DCTravelerCli/releases) 下载适合系统的压缩包：
+Windows 用户推荐使用 winget 安装：
+
+```powershell
+winget install --id Cookiekira.DCTravelerCli -e
+```
+
+安装后重新打开终端，运行：
+
+```powershell
+DCTravelerCli --help
+```
+
+如果 winget 暂未收录最新版本，或者你需要 Linux/macOS 版本，可以从 [GitHub Releases](https://github.com/Cookiekira/DCTravelerCli/releases) 下载适合系统的压缩包：
 
 - Windows x64: `DCTravelerCli-v1.0.0-win-x64.zip`
 - Windows x64 AOT: `DCTravelerCli-v1.0.0-win-x64-aot.zip`
@@ -101,6 +113,10 @@ DC Traveler CLI 使用系统中已经安装的 Chromium 系浏览器完成登录
 ## Credits
 
 - 接口信息来自 [ottercorp/DcTraveler](https://github.com/ottercorp/DcTraveler)
+
+## 许可证
+
+本项目使用 MIT 许可证，见 [LICENSE](LICENSE)。
 
 ## 本地开发
 
