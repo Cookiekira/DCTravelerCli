@@ -11,7 +11,6 @@ DC Traveler CLI 是一个用于 FF14 国服超域传送的命令行工具。它�
 - 支持选择旅行中的角色：先返回原服，再刷新角色和目标数据后继续传送。
 - 提供单独的返回原服命令。
 - 使用方向键选择，Enter 确认；列表中可以直接输入关键词筛选。
-- Ctrl+C 会先尝试优雅取消；如果卡在交互提示中，再按一次会强制退出。
 
 ## 安装
 
@@ -22,7 +21,7 @@ DC Traveler CLI 是一个用于 FF14 国服超域传送的命令行工具。它�
 - Linux x64: `DCTravelerCli-v1.0.0-linux-x64.tar.gz`
 - macOS arm64: `DCTravelerCli-v1.0.0-osx-arm64.tar.gz`
 
-解压后在终端运行：
+解压后直接打开，或者在终端运行：
 
 ```powershell
 .\DCTravelerCli.exe --help
@@ -34,6 +33,9 @@ Linux 或 macOS:
 chmod +x ./DCTravelerCli
 ./DCTravelerCli --help
 ```
+
+注意：Linux 版本在未经实机测试，如果你在 Linux 上遇到问题，请在仓库中提交 issue 并附上你的环境和重现步骤。
+
 
 ## 快速开始
 
@@ -67,8 +69,6 @@ DCTravelerCli return
 DCTravelerCli --yes
 ```
 
-`--yes` 不会跳过官网要求的二次确认。
-
 ## 常用选项
 
 ```text
@@ -86,9 +86,22 @@ DCTravelerCli --yes
 
 ## 工作方式
 
-DC Traveler CLI 使用真实的 Chromium 系浏览器完成登录，然后提取官网会话 cookie。登录完成后，传送流程通过 .NET HTTP 客户端调用官方接口，不依赖浏览器页面脚本或 DOM 点击自动化。
+DC Traveler CLI 使用系统中已经安装的 Chromium 系浏览器完成登录，然后提取官网会话 cookie。登录完成后，传送流程通过 .NET HTTP 客户端调用官方接口，不依赖浏览器页面脚本或浏览器自动化。
 
 保存的会话用于后续运行。Windows 上会话数据使用当前用户 DPAPI 保护。
+
+## 注意事项与声明
+
+- 本工具是非官方社区工具，与 Square Enix、盛趣游戏、WeGame 或最终幻想 XIV 官方没有隶属关系。
+- 本工具的操作范围限于官方超域传送页面使用的流程和接口；一切角色状态、订单状态和操作结果以官方网站显示为准。
+- 官方页面、登录流程或 API 发生变化时，传送或返回可能失败。遇到异常时，请优先登录官方超域传送网站手动确认和处理。
+- 浏览器登录、WeGame 登录或自动登录可能会在叨鱼 App 或账号安全记录中产生新的登录记录，这是登录流程带来的正常现象。
+- 本工具不会把你的账号凭据或会话上传到第三方服务器。会话数据只保存在你的本机，用于后续复用；请只在可信设备和安全网络环境下使用。
+- 使用本工具即表示你理解并接受相关风险，并授权它在本机访问你的官方登录会话来完成你确认的操作。
+
+## Credits
+
+- 接口信息来自 [ottercorp/DcTraveler](https://github.com/ottercorp/DcTraveler)
 
 ## 本地开发
 
@@ -99,5 +112,3 @@ dotnet restore DCTravelerCli.slnx --locked-mode
 dotnet test DCTravelerCli.slnx
 dotnet run -- --help
 ```
-
-发布产物由 GitHub Actions 的 `Release` 工作流生成。推送 `v*` tag 会运行测试、构建平台包、生成校验和，并创建 GitHub Release。
