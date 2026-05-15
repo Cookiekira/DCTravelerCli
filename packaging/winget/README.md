@@ -11,4 +11,4 @@ To submit a stable release:
 
 Only stable GitHub Release assets should be submitted. Do not submit nightly or canary builds.
 
-The winget manifest uses the Windows x64 AOT zip because it contains a single portable executable. The non-AOT Windows zip includes .NET sidecar files and is kept for manual GitHub Releases downloads.
+The 1.0.0 winget manifest uses the Windows x64 AOT zip because that already-published archive contains a single portable executable. For later releases, prefer the ordinary Windows x64 zip when the release workflow has produced it as a single-file package and a local `winget install --manifest` smoke test passes.

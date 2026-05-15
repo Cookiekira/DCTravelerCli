@@ -129,6 +129,8 @@ jobs:
           )
           if ("${{ matrix.publish_aot }}" -eq "true") {
             $args += "-p:PublishAot=true"
+          } else {
+            $args += "-p:PublishSingleFile=true"
           }
           dotnet @args
 
@@ -152,11 +154,28 @@ jobs:
           )
           if ("${{ matrix.publish_aot }}" -eq "true") {
             $args += "-p:PublishAot=true"
+          } else {
+            $args += "-p:PublishSingleFile=true"
           }
           dotnet @args
           Get-ChildItem -LiteralPath $publishDir -Recurse -Force |
             Where-Object { $_.Name -like "*.pdb" -or $_.Name -like "*.dbg" -or $_.Name -like "*.dSYM" } |
             Remove-Item -Recurse -Force
+          $expectedExecutable = if ("${{ runner.os }}" -eq "Windows") {
+            Join-Path $publishDir "DCTravelerCli.exe"
+          } else {
+            Join-Path $publishDir "DCTravelerCli"
+          }
+          if (-not (Test-Path -LiteralPath $expectedExecutable -PathType Leaf)) {
+            throw "Expected executable was not published: $expectedExecutable"
+          }
+          $publishedFiles = @(Get-ChildItem -LiteralPath $publishDir -Recurse -Force -File)
+          if ($publishedFiles.Count -ne 1) {
+            $fileList = $publishedFiles |
+              ForEach-Object { [System.IO.Path]::GetRelativePath($publishDir, $_.FullName) } |
+              Sort-Object
+            throw "Release publish must contain exactly one executable file, found $($publishedFiles.Count): $($fileList -join ', ')"
+          }
           Get-ChildItem -LiteralPath $publishDir -Recurse -Force -File |
             Sort-Object Length -Descending |
             ForEach-Object {
