@@ -5,7 +5,7 @@ using DCTravelerCli.Services;
 
 namespace DCTravelerCli.Infrastructure;
 
-internal sealed class ChromeLauncher
+internal sealed class BrowserLauncher(BrowserDiscovery browserDiscovery) : IDisposable
 {
     private readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(5) };
 
@@ -14,13 +14,13 @@ internal sealed class ChromeLauncher
         string initialUrl,
         CancellationToken cancellationToken)
     {
-        var process = await EnsureChromeAsync(options, initialUrl, cancellationToken);
+        var process = await EnsureBrowserAsync(options, initialUrl, cancellationToken);
         await WaitForDebugEndpointAsync(options.DebugPort, cancellationToken);
         var page = await OpenDebugPageAsync(options.DebugPort, initialUrl, cancellationToken);
         return new LaunchedBrowser(process, page);
     }
 
-    private async Task<Process?> EnsureChromeAsync(
+    private async Task<Process?> EnsureBrowserAsync(
         SessionAcquisitionOptions options,
         string initialUrl,
         CancellationToken cancellationToken)
@@ -31,18 +31,14 @@ internal sealed class ChromeLauncher
             return null;
         }
 
-        if (!options.UseDefaultChromeProfile)
+        if (!options.UseDefaultBrowserProfile)
         {
             Directory.CreateDirectory(options.ProfileDirectory);
         }
 
-        var chromePath = options.ChromePath;
-        if (string.IsNullOrWhiteSpace(chromePath))
-        {
-            chromePath = FindChrome();
-        }
+        var browserPath = browserDiscovery.ResolveBrowserPath(options.BrowserPath);
 
-        var startInfo = new ProcessStartInfo(chromePath)
+        var startInfo = new ProcessStartInfo(browserPath)
         {
             UseShellExecute = false
         };
@@ -50,7 +46,7 @@ internal sealed class ChromeLauncher
         startInfo.ArgumentList.Add("--no-first-run");
         startInfo.ArgumentList.Add("--new-window");
 
-        if (!options.UseDefaultChromeProfile)
+        if (!options.UseDefaultBrowserProfile)
         {
             startInfo.ArgumentList.Add($"--user-data-dir={options.ProfileDirectory}");
         }
@@ -58,27 +54,7 @@ internal sealed class ChromeLauncher
         startInfo.ArgumentList.Add(initialUrl);
 
         return Process.Start(startInfo)
-            ?? throw new InvalidOperationException("无法启动 Chrome。");
-    }
-
-    private static string FindChrome()
-    {
-        var candidates = new[]
-        {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application", "chrome.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Google", "Chrome", "Application", "chrome.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe")
-        };
-
-        foreach (var candidate in candidates)
-        {
-            if (!string.IsNullOrWhiteSpace(candidate) && File.Exists(candidate))
-            {
-                return candidate;
-            }
-        }
-
-        throw new InvalidOperationException("未找到 Google Chrome。请安装 Chrome，或使用 --chrome-path 指定路径。");
+            ?? throw new InvalidOperationException("无法启动浏览器。");
     }
 
     private async Task WaitForDebugEndpointAsync(int port, CancellationToken cancellationToken)
@@ -120,7 +96,7 @@ internal sealed class ChromeLauncher
         if (document.RootElement.TryGetProperty("Browser", out var browser) &&
             browser.ValueKind == JsonValueKind.String &&
             browser.GetString() is { } value &&
-            !value.StartsWith("Chrome/", StringComparison.OrdinalIgnoreCase))
+            !BrowserDiscovery.IsSupportedCdpBrowserProduct(value))
         {
             throw new InvalidOperationException($"调试端口 {port} 已被 {value} 占用。请关闭旧浏览器窗口，或使用 --debug-port 指定另一个端口。");
         }
@@ -144,8 +120,13 @@ internal sealed class ChromeLauncher
             page = pages.FirstOrDefault(IsKnownLoginOrTravelPage);
         }
 
-        page ??= pages.FirstOrDefault();
+        page ??= pages.Count > 0 ? pages[0] : null;
         return page ?? throw new InvalidOperationException("未能取得页面调试 WebSocket。");
+    }
+
+    public void Dispose()
+    {
+        httpClient.Dispose();
     }
 
     private async Task<IReadOnlyList<DebugPage>> GetPagesAsync(int port, CancellationToken cancellationToken)

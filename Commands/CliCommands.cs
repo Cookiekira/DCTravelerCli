@@ -13,17 +13,17 @@ public sealed class CliCommands(
     private static readonly string DefaultProfileDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "DCTravelerCli",
-        "ChromeProfile");
+        "BrowserProfile");
 
     /// <summary>一键执行 FF14 国服超域传送流程。</summary>
     /// <param name="wegame">通过盛趣官方跳转页直达 WeGame 登录。</param>
-    /// <param name="keepBrowserOpen">流程结束后保留 Chrome 窗口。</param>
+    /// <param name="keepBrowserOpen">流程结束后保留浏览器窗口。</param>
     /// <param name="verbose">显示诊断细节。</param>
-    /// <param name="profileDir">高级：专用 Chrome profile 路径。</param>
-    /// <param name="debugPort">高级：Chrome DevTools 调试端口。</param>
+    /// <param name="profileDir">高级：专用浏览器 profile 路径。</param>
+    /// <param name="debugPort">高级：浏览器 DevTools 调试端口。</param>
     /// <param name="loginTimeout">高级：等待登录成功的秒数。</param>
-    /// <param name="defaultChromeProfile">高级：使用 Chrome 默认 profile。</param>
-    /// <param name="chromePath">高级：手动指定 chrome.exe 路径。</param>
+    /// <param name="defaultBrowserProfile">高级：使用默认浏览器 profile。</param>
+    /// <param name="browserPath">高级：手动指定浏览器可执行文件路径。</param>
     /// <param name="yes">-y, 跳过提交前确认。</param>
     /// <param name="discoveryConcurrency">高级：角色发现并发数。</param>
     [Command("")]
@@ -34,8 +34,8 @@ public sealed class CliCommands(
         [HideDefaultValue] string? profileDir = null,
         int debugPort = 43114,
         int loginTimeout = 600,
-        bool defaultChromeProfile = false,
-        [HideDefaultValue] string? chromePath = null,
+        bool defaultBrowserProfile = false,
+        [HideDefaultValue] string? browserPath = null,
         bool yes = false,
         int discoveryConcurrency = 4,
         CancellationToken cancellationToken = default)
@@ -47,8 +47,8 @@ public sealed class CliCommands(
             profileDir,
             debugPort,
             loginTimeout,
-            defaultChromeProfile,
-            chromePath,
+            defaultBrowserProfile,
+            browserPath,
             yes,
             discoveryConcurrency,
             cancellationToken);
@@ -56,13 +56,13 @@ public sealed class CliCommands(
 
     /// <summary>一键执行 FF14 国服超域传送流程。</summary>
     /// <param name="wegame">通过盛趣官方跳转页直达 WeGame 登录。</param>
-    /// <param name="keepBrowserOpen">流程结束后保留 Chrome 窗口。</param>
+    /// <param name="keepBrowserOpen">流程结束后保留浏览器窗口。</param>
     /// <param name="verbose">显示诊断细节。</param>
-    /// <param name="profileDir">高级：专用 Chrome profile 路径。</param>
-    /// <param name="debugPort">高级：Chrome DevTools 调试端口。</param>
+    /// <param name="profileDir">高级：专用浏览器 profile 路径。</param>
+    /// <param name="debugPort">高级：浏览器 DevTools 调试端口。</param>
     /// <param name="loginTimeout">高级：等待登录成功的秒数。</param>
-    /// <param name="defaultChromeProfile">高级：使用 Chrome 默认 profile。</param>
-    /// <param name="chromePath">高级：手动指定 chrome.exe 路径。</param>
+    /// <param name="defaultBrowserProfile">高级：使用默认浏览器 profile。</param>
+    /// <param name="browserPath">高级：手动指定浏览器可执行文件路径。</param>
     /// <param name="yes">-y, 跳过提交前确认。</param>
     /// <param name="discoveryConcurrency">高级：角色发现并发数。</param>
     [Command("travel")]
@@ -73,8 +73,8 @@ public sealed class CliCommands(
         [HideDefaultValue] string? profileDir = null,
         int debugPort = 43114,
         int loginTimeout = 600,
-        bool defaultChromeProfile = false,
-        [HideDefaultValue] string? chromePath = null,
+        bool defaultBrowserProfile = false,
+        [HideDefaultValue] string? browserPath = null,
         bool yes = false,
         int discoveryConcurrency = 4,
         CancellationToken cancellationToken = default)
@@ -86,8 +86,8 @@ public sealed class CliCommands(
             profileDir,
             debugPort,
             loginTimeout,
-            defaultChromeProfile,
-            chromePath,
+            defaultBrowserProfile,
+            browserPath,
             yes,
             discoveryConcurrency,
             cancellationToken);
@@ -95,13 +95,13 @@ public sealed class CliCommands(
 
     /// <summary>只刷新登录会话，不提交超域传送订单。</summary>
     /// <param name="wegame">通过盛趣官方跳转页直达 WeGame 登录。</param>
-    /// <param name="keepBrowserOpen">流程结束后保留 Chrome 窗口。</param>
+    /// <param name="keepBrowserOpen">流程结束后保留浏览器窗口。</param>
     /// <param name="verbose">显示诊断细节。</param>
-    /// <param name="profileDir">高级：专用 Chrome profile 路径。</param>
-    /// <param name="debugPort">高级：Chrome DevTools 调试端口。</param>
+    /// <param name="profileDir">高级：专用浏览器 profile 路径。</param>
+    /// <param name="debugPort">高级：浏览器 DevTools 调试端口。</param>
     /// <param name="loginTimeout">高级：等待登录成功的秒数。</param>
-    /// <param name="defaultChromeProfile">高级：使用 Chrome 默认 profile。</param>
-    /// <param name="chromePath">高级：手动指定 chrome.exe 路径。</param>
+    /// <param name="defaultBrowserProfile">高级：使用默认浏览器 profile。</param>
+    /// <param name="browserPath">高级：手动指定浏览器可执行文件路径。</param>
     public async Task Login(
         bool wegame = false,
         bool keepBrowserOpen = false,
@@ -109,8 +109,8 @@ public sealed class CliCommands(
         [HideDefaultValue] string? profileDir = null,
         int debugPort = 43114,
         int loginTimeout = 600,
-        bool defaultChromeProfile = false,
-        [HideDefaultValue] string? chromePath = null,
+        bool defaultBrowserProfile = false,
+        [HideDefaultValue] string? browserPath = null,
         CancellationToken cancellationToken = default)
     {
         var session = await sessionAcquirer.AcquireAsync(
@@ -121,8 +121,8 @@ public sealed class CliCommands(
                 profileDir,
                 debugPort,
                 loginTimeout,
-                defaultChromeProfile,
-                chromePath,
+                defaultBrowserProfile,
+                browserPath,
                 forceRefresh: true),
             cancellationToken);
 
@@ -133,13 +133,13 @@ public sealed class CliCommands(
 
     /// <summary>将旅行中的 FF14 角色返回原服。</summary>
     /// <param name="wegame">通过盛趣官方跳转页直达 WeGame 登录。</param>
-    /// <param name="keepBrowserOpen">流程结束后保留 Chrome 窗口。</param>
+    /// <param name="keepBrowserOpen">流程结束后保留浏览器窗口。</param>
     /// <param name="verbose">显示诊断细节。</param>
-    /// <param name="profileDir">高级：专用 Chrome profile 路径。</param>
-    /// <param name="debugPort">高级：Chrome DevTools 调试端口。</param>
+    /// <param name="profileDir">高级：专用浏览器 profile 路径。</param>
+    /// <param name="debugPort">高级：浏览器 DevTools 调试端口。</param>
     /// <param name="loginTimeout">高级：等待登录成功的秒数。</param>
-    /// <param name="defaultChromeProfile">高级：使用 Chrome 默认 profile。</param>
-    /// <param name="chromePath">高级：手动指定 chrome.exe 路径。</param>
+    /// <param name="defaultBrowserProfile">高级：使用默认浏览器 profile。</param>
+    /// <param name="browserPath">高级：手动指定浏览器可执行文件路径。</param>
     /// <param name="yes">-y, 跳过提交返回前确认。</param>
     [Command("return")]
     public Task Return(
@@ -149,8 +149,8 @@ public sealed class CliCommands(
         [HideDefaultValue] string? profileDir = null,
         int debugPort = 43114,
         int loginTimeout = 600,
-        bool defaultChromeProfile = false,
-        [HideDefaultValue] string? chromePath = null,
+        bool defaultBrowserProfile = false,
+        [HideDefaultValue] string? browserPath = null,
         bool yes = false,
         CancellationToken cancellationToken = default)
     {
@@ -164,8 +164,8 @@ public sealed class CliCommands(
                     profileDir,
                     debugPort,
                     loginTimeout,
-                    defaultChromeProfile,
-                    chromePath),
+                    defaultBrowserProfile,
+                    browserPath),
                 AssumeYes = yes,
                 Verbose = verbose,
                 ReturnHome = new ReturnHomeOptions
@@ -183,8 +183,8 @@ public sealed class CliCommands(
         string? profileDir,
         int debugPort,
         int loginTimeout,
-        bool defaultChromeProfile,
-        string? chromePath,
+        bool defaultBrowserProfile,
+        string? browserPath,
         bool yes,
         int discoveryConcurrency,
         CancellationToken cancellationToken)
@@ -204,8 +204,8 @@ public sealed class CliCommands(
                     profileDir,
                     debugPort,
                     loginTimeout,
-                    defaultChromeProfile,
-                    chromePath),
+                    defaultBrowserProfile,
+                    browserPath),
                 AssumeYes = yes,
                 DiscoveryConcurrency = discoveryConcurrency,
                 Verbose = verbose,
@@ -217,15 +217,15 @@ public sealed class CliCommands(
             cancellationToken);
     }
 
-    private static SessionAcquisitionOptions ToSessionOptions(
+    internal static SessionAcquisitionOptions ToSessionOptions(
         bool wegame,
         bool keepBrowserOpen,
         bool verbose,
         string? profileDir,
         int debugPort,
         int loginTimeout,
-        bool defaultChromeProfile,
-        string? chromePath,
+        bool defaultBrowserProfile,
+        string? browserPath,
         bool forceRefresh = false)
     {
         if (debugPort is < 1024 or > 65535)
@@ -250,9 +250,9 @@ public sealed class CliCommands(
             DebugPort = debugPort,
             LoginTimeoutSeconds = loginTimeout,
             KeepBrowserOpen = keepBrowserOpen,
-            UseDefaultChromeProfile = defaultChromeProfile,
+            UseDefaultBrowserProfile = defaultBrowserProfile,
             PreferWeGameLogin = wegame,
-            ChromePath = chromePath,
+            BrowserPath = browserPath,
             Verbose = verbose,
             ForceRefresh = forceRefresh
         };

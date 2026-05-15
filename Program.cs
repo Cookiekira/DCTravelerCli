@@ -13,9 +13,10 @@ var app = ConsoleApp.Create()
     .ConfigureServices(services =>
     {
         services.AddSingleton(AnsiConsole.Console);
-        services.AddSingleton<ChromeLauncher>();
+        services.AddSingleton<BrowserDiscovery>();
+        services.AddSingleton<BrowserLauncher>();
         services.AddSingleton<ISessionStore, FileSessionStore>();
-        services.AddSingleton<ISessionAcquirer, ChromeSessionAcquirer>();
+        services.AddSingleton<ISessionAcquirer, BrowserSessionAcquirer>();
         services.AddSingleton<IWeGameLoginNavigator, WeGameLoginNavigator>();
         services.AddSingleton<ITravelApiFactory, OfficialTravelApiFactory>();
         services.AddSingleton<ICharacterDiscovery, CharacterDiscovery>();

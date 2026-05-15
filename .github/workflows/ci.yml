@@ -30,7 +30,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.203
+          dotnet-version: 10.0.x
           cache: true
           cache-dependency-path: |
             packages.lock.json
@@ -38,6 +38,9 @@ jobs:
 
       - name: Restore
         run: dotnet restore DCTravelerCli.slnx --locked-mode -p:Configuration=Release
+
+      - name: Format
+        run: dotnet format DCTravelerCli.slnx --verify-no-changes --no-restore
 
       - name: Build
         run: dotnet build DCTravelerCli.slnx --configuration Release --no-restore

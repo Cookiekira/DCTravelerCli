@@ -4,8 +4,8 @@ using Spectre.Console;
 
 namespace DCTravelerCli.Infrastructure;
 
-internal sealed class ChromeSessionAcquirer(
-    ChromeLauncher launcher,
+internal sealed class BrowserSessionAcquirer(
+    BrowserLauncher launcher,
     ITravelApiFactory apiFactory,
     IWeGameLoginNavigator weGameLoginNavigator,
     ISessionStore sessionStore,
@@ -36,9 +36,9 @@ internal sealed class ChromeSessionAcquirer(
             }
         }
 
-        if (options.UseDefaultChromeProfile)
+        if (options.UseDefaultBrowserProfile)
         {
-            console.MarkupLine("[yellow]正在使用 Chrome 默认 profile。请确保这是你信任的本机环境。[/]");
+            console.MarkupLine("[yellow]正在使用默认浏览器 profile。请确保这是你信任的本机环境。[/]");
         }
 
         var launched = await launcher.OpenAsync(options, loginUrl, cancellationToken);
@@ -127,8 +127,8 @@ internal sealed class ChromeSessionAcquirer(
         console.WriteLine();
         console.MarkupLine($"[cyan]{Markup.Escape(SessionEntryPoint.GetInstruction(options))}[/]");
 
-        console.MarkupLine(options.UseDefaultChromeProfile
-            ? "CLI 会等待登录成功，并使用 Chrome 默认 profile 的会话。"
+        console.MarkupLine(options.UseDefaultBrowserProfile
+            ? "CLI 会等待登录成功，并使用默认浏览器 profile 的会话。"
             : $"CLI 会等待登录成功，专用 profile 位于：[grey]{Markup.Escape(options.ProfileDirectory)}[/]");
         console.WriteLine();
     }

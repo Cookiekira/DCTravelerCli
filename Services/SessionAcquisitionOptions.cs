@@ -10,11 +10,11 @@ public sealed record SessionAcquisitionOptions
 
     public bool KeepBrowserOpen { get; init; }
 
-    public bool UseDefaultChromeProfile { get; init; }
+    public bool UseDefaultBrowserProfile { get; init; }
 
     public bool PreferWeGameLogin { get; init; }
 
-    public string? ChromePath { get; init; }
+    public string? BrowserPath { get; init; }
 
     public bool Verbose { get; init; }
 
