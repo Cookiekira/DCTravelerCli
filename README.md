@@ -28,10 +28,10 @@ DCTravelerCli --help
 
 如果 winget 暂未收录最新版本，或者你需要 Linux/macOS 版本，可以从 [GitHub Releases](https://github.com/Cookiekira/DCTravelerCli/releases) 下载适合系统的压缩包：
 
-- Windows x64: `DCTravelerCli-v1.0.0-win-x64.zip`
-- Windows x64 AOT: `DCTravelerCli-v1.0.0-win-x64-aot.zip`
-- Linux x64: `DCTravelerCli-v1.0.0-linux-x64.tar.gz`
-- macOS arm64: `DCTravelerCli-v1.0.0-osx-arm64.tar.gz`
+- Windows x64: `DCTravelerCli-v1.0.1-win-x64.zip`
+- Windows x64 AOT: `DCTravelerCli-v1.0.1-win-x64-aot.zip`
+- Linux x64: `DCTravelerCli-v1.0.1-linux-x64.tar.gz`
+- macOS arm64: `DCTravelerCli-v1.0.1-osx-arm64.tar.gz`
 
 解压后直接打开，或者在终端运行：
 
