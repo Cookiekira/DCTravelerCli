@@ -36,7 +36,6 @@ chmod +x ./DCTravelerCli
 
 注意：Linux 版本在未经实机测试，如果你在 Linux 上遇到问题，请在仓库中提交 issue 并附上你的环境和重现步骤。
 
-
 ## 快速开始
 
 运行默认传送流程：
